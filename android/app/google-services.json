@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "264796317155",
+    "project_id": "geomugger-18a74",
+    "storage_bucket": "geomugger-18a74.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:264796317155:android:7cfb9bc3baf06cec5f6cd6",
+        "android_client_info": {
+          "package_name": "com.example.geo_mugger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANTUP6rX2UHXN7qfU0YPOd0JDkovrTAow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
