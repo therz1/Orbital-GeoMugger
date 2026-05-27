@@ -1,4 +1,4 @@
-# geo_mugger
+# GeoMugger
 Orbitals 2026 project
 By Lawrence and Hui Zhong
 
@@ -91,12 +91,12 @@ See the [open issues](https://github.com/github_username/repo_name/issues) for a
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
+[contributors-shield]: https://img.shields.io/github/contributors/therz1/Orbital-GeoMugger.svg?style=for-the-badge
+[contributors-url]: https://github.com/therz1/Orbital-GeoMugger/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forkstherz1/Orbital-GeoMugger.svg?style=for-the-badge
+[forks-url]: https://github.com/therz1/Orbital-GeoMugger/network/members
+[stars-shield]: https://img.shields.io/github/stars/therz1/Orbital-GeoMugger.svg?style=for-the-badge
+[stars-url]: https://github.com/therz1/Orbital-GeoMugger/stargazers
 
 <!-- Shields.io badges. You can a comprehensive list with many more badges at: https://github.com/inttter/md-badges -->
 [Flutter]: https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=fff
