@@ -44,7 +44,10 @@ By Lawrence and Hui Zhong
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-Here's a blank template to get started. To avoid retyping too much info, do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`, `project_license`
+Ever find your study spots lackluster? Perhaps it's time to spice things up! Geo Mugger provides information about your current study spots as well as personalized recommendations for new study areas tailored just for you! Explore nearby cafes, quiet gardens around your study area during your breaks. Discover new study spots that meet YOUR requirement with Geo Mugger. 
+
+GeoMugger allows students to search and find/ get recommended study areas. In addition, the app should also provide the user with more information about the study spot (e.g. crowd level & amenities provided) so they can pick the optimal study spot. Lastly, users can post and review study spots they discover for other users to see.
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -93,7 +96,7 @@ See the [open issues](https://github.com/github_username/repo_name/issues) for a
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/therz1/Orbital-GeoMugger.svg?style=for-the-badge
 [contributors-url]: https://github.com/therz1/Orbital-GeoMugger/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forkstherz1/Orbital-GeoMugger.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/therz1/Orbital-GeoMugger.svg?style=for-the-badge
 [forks-url]: https://github.com/therz1/Orbital-GeoMugger/network/members
 [stars-shield]: https://img.shields.io/github/stars/therz1/Orbital-GeoMugger.svg?style=for-the-badge
 [stars-url]: https://github.com/therz1/Orbital-GeoMugger/stargazers
