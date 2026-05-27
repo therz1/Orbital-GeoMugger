@@ -1,6 +1,6 @@
 # GeoMugger
 Orbitals 2026 project
-By Lawrence and Hui Zhong
+by Lawrence and Hui Zhong
 
 ## Test
 <a id="readme-top"></a>
