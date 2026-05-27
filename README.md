@@ -23,6 +23,8 @@ By Lawrence and Hui Zhong
   <a href="https://github.com/therz1/Orbital-GeoMugger">
     <!--<img src="images/logo.png" alt="Logo" width="80" height="80"> // TO BE INSERTED LATER ON -->
   </a>
+</div>
+
 
 <!-- TABLE OF CONTENTS -->
 <details>
