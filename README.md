@@ -63,7 +63,9 @@ GeoMugger allows students to search and find/ get recommended study areas. In ad
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+For debugging and testcases, use these values(temporarily):
+* Email: testuser@geomugger.com
+* Password: password123
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -71,12 +73,14 @@ Use this space to show useful examples of how a project can be used. Additional 
 <!-- ROADMAP -->
 ## Roadmap
 
-Phase 1:
+### Phase 1(due June 1 2026):
+Focus on Technical Proof-of-Concept
 - [ ] Login 
 - [ ] Account Creation
 - [ ] HomePage Display
 
-Phase 2:
+### Phase 2:
+Implementation of more complicated features
 - [ ] Recommendation System 
 
 See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
