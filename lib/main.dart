@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'GeoMugger',
+      theme: ThemeData(primarySwatch: Colors.blue,), // <- added this
       debugShowCheckedModeBanner: false,
       // If an initialization error happened, show it immediately. Otherwise, mount the Gate.
       home: errorString != null 
@@ -107,71 +108,5 @@ class FirebaseCrashFallback extends StatelessWidget {
       ),
     );
   }
-
-/*
-void main() async{
-  WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase with the generated options
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'GeoMugger',
-      debugShowCheckedModeBanner: false,
-      home: const AuthGate(), // Start with the authentication gate
-    );
-  }
-}
-
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
-
-  @override
-  
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        // loading screen while checking authentication state
-        if (snapshot.connectionState == ConnectionState.active) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        
-        if (snapshot.hasData && snapshot.data != null) {
-          return const HomePage(); // User is logged in, show home screen
-        } else {
-          return const LoginScreen(); // User is not logged in, show login screen
-        }
-      },
-    );
-  }
-  */
-  
-  /*
-  Widget build(BuildContext context) {
-    // TEMPORARY TEST: Bypass everything to see if Flutter can draw on your browser
-    return const Scaffold(
-      backgroundColor: Colors.blueGrey,
-      body: Center(
-        child: Text(
-          "FLUTTER IS ALIVE!", 
-          style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)
-        ),
-      ),
-    );
-  }
-  */
 }
 
