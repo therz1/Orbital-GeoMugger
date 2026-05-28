@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/location_service.dart';
+import 'location_page.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -31,24 +32,45 @@ class HomeView extends StatelessWidget {
             itemCount: documents.length,
             padding: const EdgeInsets.all(12),
             itemBuilder: (context, index) {
+              // document snapshot information:
+              final docSnapshot = documents[index];
+              final String docId = docSnapshot.id; // Unique document ID for navigation
+            
               final Map<String, dynamic> data = documents[index].data() as Map<String, dynamic>;
               
               final String locationName = data['LocationName'] ?? 'Unknown Location';
-              //final String review = data['Review'] ?? 'No review provided.';
+              final String review = data['Review'] ?? 'No review provided.';
               final int rating = data['Rating'] ?? 0;
 
               return Card(
                 elevation: 3,
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.brown,
-                    child: const Icon(Icons.location_on, color: Colors.orange),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () {
+                    // Navigate to the detail page with the location data
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LocationDetailPage(
+                          locationID: docId,
+                          locationName: locationName,
+                          review: review,
+                          rating: rating,
+                        ),
+                      ),
+                    );
+                  },
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.brown,
+                      child: const Icon(Icons.location_on, color: Colors.orange),
+                    ),
+                    title: Text(locationName),
+                    //subtitle: Text(review),
+                    subtitle: Text('Rating: ${'⭐' * rating}'),
                   ),
-                  title: Text(locationName),
-                  //subtitle: Text(review),
-                  subtitle: Text('Rating: ${'⭐' * rating}'),
                 ),
               );
              },
