@@ -3,6 +3,8 @@ import 'add_location_page.dart';
 import 'home_view.dart';
 import 'saved_view.dart';
 import 'profile_view.dart';
+import '../services/auth_service.dart';
+import 'login_screen.dart';
 
 // File contains the home screen after successful login.
 class HomePage extends StatefulWidget {
@@ -35,6 +37,25 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text('GeoMugger', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            tooltip: 'Logout',
+            onPressed: () async {
+              // 1. Trigger the Firebase sign out routine pipeline
+              await AuthService().logout();
+
+              // 2. Clear navigation stack and bounce back to the login gateway
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()), // <-- Change to your actual Login Page class name!
+                  (route) => false, // This line completely purges the history stack tracking logs
+                );
+              }
+            },
+          ),
+        ],
       ),
       
       body: _viewOptions[_selectedIndex],

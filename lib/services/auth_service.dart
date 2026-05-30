@@ -7,10 +7,10 @@ class AuthService {
     required String email,
     required String password
   }) async {
-
+    final cleanEmail = email.trim();
     try {
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email, password: password
+        email: cleanEmail, password: password
       );
       return null; // Successful signup
 
@@ -37,20 +37,23 @@ class AuthService {
     required String password
   }) async {
     try {
+      final cleanEmail = email.trim();
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email, password: password
+        email: cleanEmail, 
+        password: password
       );
       return null; // Successful login
 
     } on FirebaseAuthException catch(e) {
       // error messages
-      String message = '';
-      if (e.code == 'user-not-found' || e.code == 'wrong-password'){
-        message = 'Invalid email or password.';
-      } else {
-        message = 'An error occurred. Please try again.';
+      if (e.code == 'user-not-found' || e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        return 'Invalid email or password.';
+      } else if (e.code == 'invalid-email') {
+        return 'The email address format is badly formatted.';
+      } else if (e.code == 'user-disabled') {
+        return 'This account has been disabled.';
       }
-      return message;
+      return 'Login failed: ${e.message ?? "Please try again."}';
     } catch (e) {
       return 'An error occurred. Please try again.';
     }

@@ -45,13 +45,18 @@ class _AddLocationPageState extends State<AddLocationPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorResult), backgroundColor: Colors.red),
       );
-      Navigator.pop(context);
+      //Navigator.pop(context);
     } else {
       // Success
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("'$locationName' added successfully"), backgroundColor: Colors.green),
       );
-      Navigator.pop(context);
+      //Navigator.pop(context);
+      _locationNameController.clear();
+      _reviewController.clear();
+      setState(() {
+        _currentRating = 0;
+      });
     }
   }
 
@@ -65,107 +70,109 @@ class _AddLocationPageState extends State<AddLocationPage> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
 
-              // location name section
-              const Text(
-                'Location Name', 
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-              ),
-              const SizedBox(height: 10),
-
-              TextFormField(
-                controller: _locationNameController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Enter location name',
+                // location name section
+                const Text(
+                  'Location Name', 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a location name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
-              // rating section
-              const Text(
-                'Rating', 
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: List.generate(5, (index) {
-                  final int starValue = index + 1;
-                  return IconButton(
-                    icon: Icon(
-                      Icons.star,
-                      color: starValue <= _currentRating ? Colors.amber : Colors.grey,
-                      size: 32,
-                    ),
-                    onPressed: (){ 
-                      setState(() => _currentRating = starValue);
-                    },
-                  );
-                }),
-              ),
-              const SizedBox(height: 20),
-
-              // review section
-              const Text(
-                'Review', 
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-              ),
-              const SizedBox(height: 10),
-        
-              TextFormField(
-                //expands: true,
-                minLines: 5,
-                maxLines: null,
-
-                textAlignVertical: TextAlignVertical.top,
-                textAlign: TextAlign.left,
-
-                controller: _reviewController,
-                decoration: const InputDecoration(
-                  //contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 80),
-                  border: OutlineInputBorder(),
-                  hintText: 'Enter review',
-                  //contentPadding: EdgeInsets.all(12),
+                TextFormField(
+                  controller: _locationNameController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter location name',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a location name';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please give your honest review';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                // rating section
+                const Text(
+                  'Rating', 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
                 ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: List.generate(5, (index) {
+                    final int starValue = index + 1;
+                    return IconButton(
+                      icon: Icon(
+                        Icons.star,
+                        color: starValue <= _currentRating ? Colors.amber : Colors.grey,
+                        size: 32,
+                      ),
+                      onPressed: (){ 
+                        setState(() => _currentRating = starValue);
+                      },
+                    );
+                  }),
+                ),
+                const SizedBox(height: 20),
 
-                onPressed: _isSaving ? null : _submitLocation,
-                child: _isSaving 
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text('Add Location', style: TextStyle(fontSize: 16)),
-              )
-            ]
-          ),
+                // review section
+                const Text(
+                  'Review', 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                ),
+                const SizedBox(height: 10),
+          
+                TextFormField(
+                  //expands: true,
+                  minLines: 5,
+                  maxLines: null,
+
+                  textAlignVertical: TextAlignVertical.top,
+                  textAlign: TextAlign.left,
+
+                  controller: _reviewController,
+                  decoration: const InputDecoration(
+                    //contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 80),
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter review',
+                    //contentPadding: EdgeInsets.all(12),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please give your honest review';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.brown,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+
+                  onPressed: _isSaving ? null : _submitLocation,
+                  child: _isSaving 
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Text('Add Location', style: TextStyle(fontSize: 16)),
+                )
+              ]
+            ),
+          )
         ),
       ),
     );
