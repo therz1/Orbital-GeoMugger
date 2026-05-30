@@ -47,11 +47,9 @@ class _HomePageState extends State<HomePage> {
 
               // 2. Clear navigation stack and bounce back to the login gateway
               if (context.mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()), // <-- Change to your actual Login Page class name!
-                  (route) => false, // This line completely purges the history stack tracking logs
-                );
+                onPressed: () async {
+              await AuthService().logout();
+                };
               }
             },
           ),
