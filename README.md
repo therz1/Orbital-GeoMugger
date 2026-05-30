@@ -119,8 +119,8 @@ Follow these steps to explore, add, and manage locations within GeoMugger.
 * **Create an Account:** If you are a new user, enter a valid email address and password, then tap the "sign up" action button.
 * **Sign In:** Existing users can log in securely using their registered email and password. 
 For debugging and testcases, use these values(temporarily):
-* Email: testuser@geomugger.com
-* Password: password123
+  * Email: testuser@geomugger.com
+  * Password: password123
 
 
 ### 2. Exploring Spots & Reviews
@@ -129,7 +129,8 @@ For debugging and testcases, use these values(temporarily):
 
 ### 3. Adding a New Spot
 * **Navigate to Form:** Tap the **Add Location** tab option from the persistent bottom navigation bar.
-* **Input Information:** 1. Type in the unique **Location Name** (e.g., *Banzai Pipeline*).
+* **Input Information:** 
+  1. Type in the unique **Location Name** (e.g., *Banzai Pipeline*).
   2. Select a star rating value ranging from 1 to 5 stars by tapping the interactive star array indicators.
   3. Provide an honest, detailed write-up in the multi-line **Review** text block field.
 * **Save to Cloud:** Tap the **Add Location** button. A loading indicator will activate as the payload establishes asynchronous network handshakes with Firestore.
