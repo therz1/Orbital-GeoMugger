@@ -146,7 +146,7 @@ For debugging and testcases, use these values(temporarily):
 <!-- ROADMAP -->
 ## Roadmap
 
-### Phase 1(due June 1 2026):
+### Phase 1: (due June 1 2026):
 - Login/Register
 - Home Page
 - Adding Locations
@@ -165,14 +165,14 @@ Allow users to search location from the existing study spots added. Users can fi
 
 Allow users to add pictures of the locations.Insert existing and common study spots like various nlb.
 
-### Phase 3 (end June)
+### Phase 3: (end June)
 - **UI/UX refinement**
 - **Recommendation System**
 - **Profile Page**
 
 Apps recommend study spots based on user's past reviews or saved study spots. Done by utilising machine learning techniques like collaborative filtering or association rule.
 
-### Phase 4 (July and Beyond)
+### Phase 4: (July and Beyond)
 - **Location**
 
 Allow users to navigate to nearby study spots using Google Maps API
