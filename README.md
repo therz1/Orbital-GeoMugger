@@ -1,4 +1,4 @@
-# GeoMugger
+# NUS Orbital 2026 - GeoMugger
 Orbitals 2026 project
 by Lawrence and Hui Zhong
 
@@ -33,11 +33,36 @@ by Lawrence and Hui Zhong
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
-        <li><a href="#built-with">Built With</a></li>
+        <li><a href="#motivation">Motivation</a></li>
+      </ul>
+      <ul>
+        <li><a href="#aim">Aim</a></li>
+      </ul>
+      <ul>
+        <li><a href="#user-stories">User Stories</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#scope">Project Scope</a></li>
+      <ul>
+        <li><a href="#features-implemented-thus-far">User Stories</a></li>
+      </ul>
+      <ul>
+        <li><a href="#built-with">Tech Stack</a></li>
+      </ul>
+    <li><a href="#guide">Guide to Use</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
+      <ul>
+        <li><a href="#phase-1">Phase 1</a></li>
+      </ul>
+      <ul>
+        <li><a href="#phase-2">Phase 2</a></li>
+      </ul>
+      <ul>
+        <li><a href="#phase-3">Phase 3</a></li>
+      </ul>
+      <ul>
+        <li><a href="#phase-3">Phase 4</a></li>
+      </ul>
     <li><a href="#contributing">Contributing</a></li>
   </ol>
 </details>
@@ -50,6 +75,44 @@ GeoMugger allows students to search and find/ get recommended study areas. In ad
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Motivation
+During one of my study sessions at com 1 basement, I decided to take a stroll around the school compound during my study breaks. While strolling, I discovered many new facilities close by that I wasn't aware of previously.
+
+A lot of times I also feel mentally exhausted when I keep revisiting the same study spots because I am unsure if other study spots provide amenities like air-conditioning or power plugs that suit my study needs.
+
+Wouldn't it be nice if there is a platform dedicated to reviewing and recommending study spots for students?
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Aim
+Enable students to discover more locations to study or find out more about their current study spots through the use of reviews and recommendation systems.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### User Stories
+- As a student who focuses better with white noise, I want the app to recommend "vibrant" cafes instead of silent libraries, so that I don't feel awkward if I need to discuss a project with a friend.
+- As a student whose laptop battery is at 10%, I want to filter for spots specifically labeled with "high charging port availability," so that I don't waste time walking to a place where I can't plug in.
+- As a student that likes nature and green scenery, I would like study spots located near these environments so I can visit them during my study breaks.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+## Scope
+The Android app is a platform dedicated for students to post reviews about study spots.
+
+**How are we different from similar platforms?**
+- **Google Maps / Yelp:** Too many locations present, the app is not designed specifically for study spots.
+- **Muggerino :** The app provides information about the study spots but it does not have a recommendation system to suggest new study spots to users.
+
+
+### Features implemented thus far:
+**Features implemented by Milestone 1:**
+
+- Login/Register
+- Home Page
+- Adding Locations
+- Saving and viewing your saved locations
 
 ### Built With
 
@@ -74,16 +137,32 @@ For debugging and testcases, use these values(temporarily):
 ## Roadmap
 
 ### Phase 1(due June 1 2026):
-Focus on Technical Proof-of-Concept
-- [ ] Login 
-- [ ] Account Creation
-- [ ] HomePage Display
+- Login/Register
+- Home Page
+- Adding Locations
+- Saving and viewing your saved locations
 
-### Phase 2:
-Implementation of more complicated features
-- [ ] Recommendation System 
+### Phase 2: (mid June)
+- **Improved Review system**
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
+Allow users to assign tags to a place like 'air-con' when reviewing the study spots. Allow multiple users to review the same study spots.
+
+- **Search and Filter System**
+
+Allow users to search location from the existing study spots added. Users can filter based on the tags assigned in the review.
+
+- **Database**
+
+Allow users to add pictures of the locations.Insert existing and common study spots like various nlb.
+
+### Phase 3 (end June)
+- **UI/UX refinement**
+- **Recommendation System**
+Apps recommend study spots based on user's past reviews or saved study spots. Done by utilising machine learning techniques like collaborative filtering or association rule.
+
+### Phase 4 (July and Beyond)
+- **Location**
+Allow users to navigate to nearby study spots using Google Maps API
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

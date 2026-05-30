@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (mounted) setState(() => _isLoading = false);
     if (errorResult != null) {
       _showSnackbar(errorResult);
-    }
+    } 
   }
 
   @override
