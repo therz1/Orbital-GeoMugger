@@ -51,18 +51,6 @@ by Lawrence and Hui Zhong
       </ul>
     <li><a href="#guide">Guide to Use</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-      <ul>
-        <li><a href="#phase-1">Phase 1</a></li>
-      </ul>
-      <ul>
-        <li><a href="#phase-2">Phase 2</a></li>
-      </ul>
-      <ul>
-        <li><a href="#phase-3">Phase 3</a></li>
-      </ul>
-      <ul>
-        <li><a href="#phase-3">Phase 4</a></li>
-      </ul>
     <li><a href="#contributing">Contributing</a></li>
   </ol>
 </details>
@@ -125,10 +113,31 @@ The Android app is a platform dedicated for students to post reviews about study
 
 <!-- USAGE EXAMPLES -->
 ## Usage
+Follow these steps to explore, add, and manage locations within GeoMugger.
 
+### 1. Authentication (Login & Sign Up)
+* **Create an Account:** If you are a new user, enter a valid email address and password, then tap the "sign up" action button.
+* **Sign In:** Existing users can log in securely using their registered email and password. 
 For debugging and testcases, use these values(temporarily):
 * Email: testuser@geomugger.com
 * Password: password123
+
+
+### 2. Exploring Spots & Reviews
+* **The Master Feed:** Once logged in, you will land directly on the **Home View** dashboard showing a clean list of all logged locations uploaded by users.
+* **View Details:** Tap on any location card widget to seamlessly transition into its dedicated **Location Detail Page**. Here you can read full comprehensive user reviews and see their respective star rating distributions.
+
+### 3. Adding a New Spot
+* **Navigate to Form:** Tap the **Add Location** tab option from the persistent bottom navigation bar.
+* **Input Information:** 1. Type in the unique **Location Name** (e.g., *Banzai Pipeline*).
+  2. Select a star rating value ranging from 1 to 5 stars by tapping the interactive star array indicators.
+  3. Provide an honest, detailed write-up in the multi-line **Review** text block field.
+* **Save to Cloud:** Tap the **Add Location** button. A loading indicator will activate as the payload establishes asynchronous network handshakes with Firestore.
+* **Success Feedback:** Upon successful server synchronization, a green notification SnackBar will slide up confirming the write action, and the inputs will auto-reset so you can easily register another location.
+
+### 4. Secure Sign Out
+* **Ending Your Session:** Click the **Log Out** button on the top-right of the page to securely disconnect your local session state configuration. This clears your device credentials and safely replaces your active route bounds back to the secure Login Screen layout framework.
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -158,10 +167,13 @@ Allow users to add pictures of the locations.Insert existing and common study sp
 ### Phase 3 (end June)
 - **UI/UX refinement**
 - **Recommendation System**
+- **Profile Page**
+
 Apps recommend study spots based on user's past reviews or saved study spots. Done by utilising machine learning techniques like collaborative filtering or association rule.
 
 ### Phase 4 (July and Beyond)
 - **Location**
+
 Allow users to navigate to nearby study spots using Google Maps API
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
