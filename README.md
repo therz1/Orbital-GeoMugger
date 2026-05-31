@@ -130,7 +130,7 @@ For debugging and testcases, use these values(temporarily):
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/homepage.jpg" alt="Homepage" width="80" height="80">
+    <img src="images/homepage.png" alt="Homepage" width="100" height="300">
   </a>
 </div>
 
