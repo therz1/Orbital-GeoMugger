@@ -115,6 +115,12 @@ The Android app is a platform dedicated for students to post reviews about study
 ## Usage
 Follow these steps to explore, add, and manage locations within GeoMugger.
 
+<div align="center">
+  <a href="https://github.com/therz1/Orbital-GeoMugger">
+    <img src="images/login.jpg" alt="Login" width="80" height="80">
+  </a>
+</div>
+
 ### 1. Authentication (Login & Sign Up)
 * **Create an Account:** If you are a new user, enter a valid email address and password, then tap the "sign up" action button.
 * **Sign In:** Existing users can log in securely using their registered email and password. 
@@ -122,10 +128,21 @@ For debugging and testcases, use these values(temporarily):
   * Email: testuser@geomugger.com
   * Password: password123
 
+<div align="center">
+  <a href="https://github.com/therz1/Orbital-GeoMugger">
+    <img src="images/homepage.jpg" alt="Homepage" width="80" height="80">
+  </a>
+</div>
 
 ### 2. Exploring Spots & Reviews
 * **The Master Feed:** Once logged in, you will land directly on the **Home View** dashboard showing a clean list of all logged locations uploaded by users.
 * **View Details:** Tap on any location card widget to seamlessly transition into its dedicated **Location Detail Page**. Here you can read full comprehensive user reviews and see their respective star rating distributions.
+
+<div align="center">
+  <a href="https://github.com/therz1/Orbital-GeoMugger">
+    <img src="images/addpage.jpg" alt="addpage" width="80" height="80">
+  </a>
+</div>
 
 ### 3. Adding a New Spot
 * **Navigate to Form:** Tap the **Add Location** tab option from the persistent bottom navigation bar.
@@ -136,7 +153,22 @@ For debugging and testcases, use these values(temporarily):
 * **Save to Cloud:** Tap the **Add Location** button. A loading indicator will activate as the payload establishes asynchronous network handshakes with Firestore.
 * **Success Feedback:** Upon successful server synchronization, a green notification SnackBar will slide up confirming the write action, and the inputs will auto-reset so you can easily register another location.
 
+<div align="center">
+  <a href="https://github.com/therz1/Orbital-GeoMugger">
+    <img src="images/saved.jpg" alt="saved" width="80" height="80">
+  </a>
+</div>
+
 ### 4. Secure Sign Out
+* **Checking your saved Locations:** Click the **Saved** tab to check your saved locations as well as the review.
+
+<div align="center">
+  <a href="https://github.com/therz1/Orbital-GeoMugger">
+    <img src="images/exit.png" alt="logout" width="80" height="80">
+  </a>
+</div>
+
+### 5. Secure Sign Out
 * **Ending Your Session:** Click the **Log Out** button on the top-right of the page to securely disconnect your local session state configuration. This clears your device credentials and safely replaces your active route bounds back to the secure Login Screen layout framework.
 
 
