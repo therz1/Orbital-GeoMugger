@@ -117,7 +117,7 @@ Follow these steps to explore, add, and manage locations within GeoMugger.
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/login.jpg" alt="Login" width="80" height="80">
+    <img src="images/login.jpg" alt="Login" width="200" height="600">
   </a>
 </div>
 
@@ -130,7 +130,7 @@ For debugging and testcases, use these values(temporarily):
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/homepage.png" alt="Homepage" width="100" height="300">
+    <img src="images/homepage.png" alt="Homepage" width="200" height="600">
   </a>
 </div>
 
@@ -140,7 +140,7 @@ For debugging and testcases, use these values(temporarily):
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/addpage.jpg" alt="addpage" width="80" height="80">
+    <img src="images/addpage.jpg" alt="addpage" width="200" height="600">
   </a>
 </div>
 
@@ -155,7 +155,7 @@ For debugging and testcases, use these values(temporarily):
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/saved.jpg" alt="saved" width="80" height="80">
+    <img src="images/saved.jpg" alt="saved" width="200" height="600">
   </a>
 </div>
 
@@ -164,7 +164,7 @@ For debugging and testcases, use these values(temporarily):
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/exit.png" alt="logout" width="80" height="80">
+    <img src="images/exit.png" alt="logout" width="200" height="600">
   </a>
 </div>
 
