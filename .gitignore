@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# =========================================================================
+# GeoMugger Custom Ignores (Keep API Keys Safe!)
+# =========================================================================
+.env
+.env.local
+
+lib/firebase_options.dart

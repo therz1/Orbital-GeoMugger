@@ -5,14 +5,6 @@ by Lawrence and Hui Zhong
 ## Test
 <a id="readme-top"></a>
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -49,7 +41,10 @@ by Lawrence and Hui Zhong
       <ul>
         <li><a href="#built-with">Tech Stack</a></li>
       </ul>
-    <li><a href="#guide">Guide to Use</a></li>
+    <li><a href="#usage">Guide to Use</a></li>
+      <ul>
+        <li><a href="#features">User Stories</a></li>
+      </ul>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
   </ol>
@@ -113,11 +108,55 @@ The Android app is a platform dedicated for students to post reviews about study
 
 <!-- USAGE EXAMPLES -->
 ## Usage
+### 📋 Prerequisites
+Because this project connects to Firebase, the secret configuration keys (`lib/firebase_options.dart`) are excluded from Git version control. To build and run this app on your local machine, you must connect it to your own Firebase project instance.
+
+1. Install the [Flutter SDK](https://docs.flutter.dev/get-started/install).
+2. Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_cli) globally on your machine.
+3. Log into your Firebase account via your terminal:
+   ```bash
+   firebase login
+   ```
+
+### ⚙️ Installation & Setup
+
+1. **Clone the repository:**
+  ```bash 
+  git clone https://github.com/therz1/Orbital-GeoMugger.git
+  cd Orbital-GeoMugger
+  ```
+
+2. **Activate the FlutterFire Tooling:**
+Activate the official global Google compiler bindings to generate localized platform targets:
+```bash
+dart pub global activate flutterfire_cli
+```
+
+3. **Generate your personal Firebase options**
+Execute the automated configuration tool from the project root. The CLI will inspect your Firebase project dashboard, register the apps, and compile a brand-new, secure lib/firebase_options.dart file dynamically:
+```bash
+flutterfire configure
+```
+
+4. **Install dependencies & Verify Setup:**
+  ```
+  flutter pub get
+  flutter doctor
+  ```  
+
+5. **Running the App:**
+  Use 'flutter devices' to ensure you are connected to a device correctly, and run it accordingly.
+  ```
+  flutter devices
+  flutter run
+  ```
+
+### Features
 Follow these steps to explore, add, and manage locations within GeoMugger.
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/login.jpg" alt="Login" width="200" height="600">
+    <img src="images/login.jpg" alt="Login" width="250" height="600">
   </a>
 </div>
 
@@ -130,7 +169,7 @@ For debugging and testcases, use these values(temporarily):
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/homepage.png" alt="Homepage" width="200" height="600">
+    <img src="images/homepage.png" alt="Homepage" width="250" height="600">
   </a>
 </div>
 
@@ -140,7 +179,7 @@ For debugging and testcases, use these values(temporarily):
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/addpage.jpg" alt="addpage" width="200" height="600">
+    <img src="images/addpage.jpg" alt="addpage" width="250" height="600">
   </a>
 </div>
 
@@ -155,16 +194,16 @@ For debugging and testcases, use these values(temporarily):
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/saved.jpg" alt="saved" width="200" height="600">
+    <img src="images/saved.jpg" alt="saved" width="250" height="600">
   </a>
 </div>
 
-### 4. Secure Sign Out
+### 4. Saved Locations
 * **Checking your saved Locations:** Click the **Saved** tab to check your saved locations as well as the review.
 
 <div align="center">
   <a href="https://github.com/therz1/Orbital-GeoMugger">
-    <img src="images/exit.png" alt="logout" width="200" height="600">
+    <img src="images/exit.png" alt="logout" width="250" height="600">
   </a>
 </div>
 
