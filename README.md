@@ -43,7 +43,7 @@ by Lawrence and Hui Zhong
       </ul>
     <li><a href="#usage">Guide to Use</a></li>
       <ul>
-        <li><a href="#features">User Stories</a></li>
+        <li><a href="#features">Features</a></li>
       </ul>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
