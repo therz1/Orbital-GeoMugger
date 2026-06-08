@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/location_service.dart';
 import 'location_page.dart';
+import '../widgets/searchbar.dart';
+import '../widgets/star_display.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -11,25 +13,7 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    // Update our state whenever the text changes
-    _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text.toLowerCase();
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,24 +25,14 @@ class _HomeViewState extends State<HomeView> {
         body: Column(
           children: [
             // Search bar
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: SearchBar(
-                controller: _searchController,
-                hintText: 'Search locations',
-                trailing: _searchQuery.isNotEmpty
-                  ? [
-                      IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => _searchController.clear(),
-                      )
-                    ]
-                  : null,
-              ),
+            LocationSearchBar(
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase();
+                });
+              },
             ),
-          
-
-
+   
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: LocationService().getLocations(),
@@ -140,7 +114,7 @@ class _HomeViewState extends State<HomeView> {
                             ),
                             title: Text(locationName),
                             //subtitle: Text(review),
-                            subtitle: Text('Rating: ${'⭐' * rating}'),
+                            subtitle: StarRatingWidget(rating: rating),
                           ),
                       ),
                     );

@@ -65,6 +65,49 @@ class LocationService {
     }
   }
 
+  Future<int?> getAverageRating(String locationId) async {
+    try {
+      final QuerySnapshot reviewsSnapshot = await _firestore
+          .collection('locations')
+          .doc(locationId)
+          .collection('reviews')
+          .get();
+      int sum = reviewsSnapshot.docs.length;     
+      if (reviewsSnapshot.docs.isEmpty) {
+        return 0; // No reviews, average rating is 0
+      }
+      double totalRating = 0;
+      for (var doc in reviewsSnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final num rating = data['Rating'] ?? 0;
+        totalRating += rating.toInt();
+      }
+      return (totalRating / sum).round(); // Return average rating rounded to nearest integer
+    } catch (e) {
+      return 0; // In case of error, return 0
+    }
+  }
+
+  Future<String?> addReview({
+    required String locationId,
+    required String review,
+    required int rating,
+  }) async {
+    try {
+      await _firestore
+      .collection('locations')
+      .doc(locationId)
+      .collection('reviews')
+      .add({
+        'Review': review,
+        'Rating': rating,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      return 'Failed to add review. Please try again.';
+    }
+  }
+
   Stream<QuerySnapshot> getLocations() {
     return _firestore.collection('locations').orderBy('timestamp', descending: true).snapshots();
   }
@@ -79,4 +122,14 @@ class LocationService {
     .orderBy('timestamp', descending: true)
     .snapshots();
   }
+
+  Stream<QuerySnapshot> getReviews(String locationId) {
+    return _firestore
+      .collection('locations')
+      .doc(locationId)
+      .collection('reviews')
+      .orderBy('timestamp', descending: true)
+      .snapshots();
+  }
+
 }
