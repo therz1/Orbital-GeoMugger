@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' ;
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/location_service.dart';
 
 class AddReviewPage extends StatefulWidget {
@@ -35,14 +36,26 @@ class _AddReviewPageState extends State<AddReviewPage> {
   void _submitReview() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isSaving = true);
+    // Ensure a rating is selected before submitting
+    if (_currentRating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select a rating star!"), 
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
+    setState(() => _isSaving = true);
     final String review = _reviewController.text.trim();
 
-    final String? errorResult = await LocationService().addReview(
+    final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final String? errorResult = await LocationService().addReviewAndUpdateAverage(
       locationId: widget.locationId,
       review: review,
       rating: _currentRating,
+      userId: userId, 
     );
 
     if (!mounted) return;

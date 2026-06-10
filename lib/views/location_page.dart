@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/location_service.dart';
 import '../widgets/star_display.dart';
+import '../widgets/main_star_display.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'add_review_page.dart';
+
 class LocationDetailPage extends StatefulWidget {
   final String locationID; 
   final String locationName;
@@ -79,20 +81,38 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.locationName,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                      .collection('locations')
+                      .doc(widget.locationID)
+                      .snapshots(),
+              builder:(context, snapshot) {
+                double avgRating = 0.0;
+              
+                if (snapshot.hasData && snapshot.data!.exists) {
+                  final data = snapshot.data!.data() as Map<String, dynamic>?;
+                  avgRating = (data?['AverageRating'] ?? 0.0).toDouble();
+                }
 
-            // ratings
-            Row(
-              children: [
-                Text('Rating: ', style: TextStyle(fontSize: 18)),
-                StarRatingWidget(rating: widget.rating), // Using the star rating widget
-                //Text(starString, style: TextStyle(fontSize: 18, color: Colors.orange)),
-              ],
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.locationName,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Row (
+                      children: [
+                        const Text('Rating: ', style: TextStyle(fontSize: 18)),
+                        MainStarRatingWidget(rating: avgRating),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
+            const SizedBox(height: 8),           
             const Divider(height: 16, thickness: 1),
 
             // add a review section

@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/location_service.dart';
 import 'location_page.dart';
 import '../widgets/searchbar.dart';
-import '../widgets/star_display.dart';
+import '../widgets/main_star_display.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -86,6 +86,7 @@ class _HomeViewState extends State<HomeView> {
                       final String locationName = data['LocationName'] ?? 'Unknown Location';
                       final String review = data['Review'] ?? 'No review provided.';
                       final int rating = data['Rating'] ?? 0;
+                      final double avgRating = data['AverageRating'] ?? 0.0;
 
                       return Card(
                         elevation: 3,
@@ -114,7 +115,10 @@ class _HomeViewState extends State<HomeView> {
                             ),
                             title: Text(locationName),
                             //subtitle: Text(review),
-                            subtitle: StarRatingWidget(rating: rating),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: MainStarRatingWidget(rating: avgRating),
+                            ),
                           ),
                       ),
                     );
