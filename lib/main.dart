@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -110,3 +111,21 @@ class FirebaseCrashFallback extends StatelessWidget {
   }
 }
 
+// to prepopulate firebase with the default tags
+Future<void> prePopulateTags() async {
+  DocumentReference tagRef = FirebaseFirestore.instance
+                            .collection('metadata')
+                            .doc('tags_list');
+  Map<String, List<String>> tagData  = {
+    'Vibes': ['Bright', 'Cozy', 'Chill', 'Dark Academia', 'Library', 'Quiet', 'White noise'],
+    'Amenities': ['Air con', 'Comfortable seats', 'Discussion Area', 'Lamp', 'Multiple seats', 'Power Outlet', 'Printer', 'Standing desk' 'Wifi'],
+    'Facilities near-by': ['Bus stop', 'Bookshop', 'Car park', 'Convenience store', 'Food Court', 'Garden', 'Public toilet', 'Mall', 'MRT']
+  };
+
+  try {
+    await tagRef.set(tagData, SetOptions(merge: true));
+    print("tag data successfully populated");
+  } catch(error) {
+    print("error incurred from prepopulating: $error");
+  }
+}
