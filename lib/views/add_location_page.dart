@@ -109,6 +109,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
       locationName: locationName,
       review: review,
       rating: _currentRating,
+      userSelectedTags: _selectedTags,
     );
 
     if (!mounted) return;
@@ -121,14 +122,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
       );
       //Navigator.pop(context);
     } else {
-      try{
-        await _submitCategorizedTags(
-          locationId: widget.locationId,
-          userSelectedTags: _selectedTags
-        );
-        if (!mounted) return;
         setState(() {
-          _isSaving = false;
           _selectedTags.clear();
           _currentRating = 0;
         });
@@ -141,14 +135,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
         _locationNameController.clear();
         _reviewController.clear();
 
-      } catch(tagError) {
-        if (!mounted) return;
-        setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Location saved, but tags failed : $tagError"), backgroundColor: Colors.red),
-        );
-      }
-    }
+      } 
     }
   
 
@@ -156,13 +143,16 @@ class _AddLocationPageState extends State<AddLocationPage> {
     required String locationId,
     required List<Map<String, String>> userSelectedTags,
   }) async {
+    // return nothing if no tags selected.
+    if(userSelectedTags.isEmpty) return; // No tags to process, skip the function
     DocumentReference locationRef = FirebaseFirestore.instance.collection('locations').doc(locationId);
     return FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot snapshot = await transaction.get(locationRef);
       if(! snapshot.exists) {
         throw Exception("Location record profile not found!");
     }
-    Map<String, dynamic> allTags = snapshot.get('allTags') != null ?
+    final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic> ? ?? {};
+    final Map<String, dynamic> allTags = snapshot.get('allTags') != null ?
       Map<String, dynamic>.from(snapshot.get('allTags')) : {} ;
     
     for (var tag in userSelectedTags) {
@@ -170,16 +160,20 @@ class _AddLocationPageState extends State<AddLocationPage> {
       String tagCategory = tag['category']!;
 
       if(allTags.containsKey(tagName)) {
+        final Map<String, dynamic> currentTagData = Map<String, dynamic>.from(allTags[tagName] as Map);
+        final int currentCount = currentTagData['count'] ?? 0.toInt();
+        currentTagData['count'] = currentCount + 1;
         allTags[tagName]['count'] = (allTags[tagName]['count'] ?? 0 ) + 1;
       } else {
         allTags[tagName] = {'category': tagCategory, 'count' : 1};
       }
       }
-      var sortedTagList = allTags.entries.map((entry) {
+      final List<Map<String, dynamic>> sortedTagList = allTags.entries.map((entry) {
+        final Map<String, dynamic> tagVal = Map<String, dynamic>.from(entry.value as Map);
         return {
           'name': entry.key,
-          'category': entry.value['category'],
-          'count' : entry.value['count'],
+          'category': tagVal['category'] ?? 'Vibes',
+          'count' : tagVal['count']?? 1 ,
         };
       }).toList();
 
