@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' ;
 import '../services/location_service.dart';
 
 class AddLocationPage extends StatefulWidget {
-  const AddLocationPage({super.key});
+  final String locationId;
+  const AddLocationPage({super.key, required this.locationId});
 
   @override
   State<AddLocationPage> createState() => _AddLocationPageState();
@@ -15,6 +17,18 @@ class _AddLocationPageState extends State<AddLocationPage> {
 
   int _currentRating = 0; // Default rating value
   bool _isSaving  = false;
+  bool _isLoadingTags = true;
+  
+  //create a tagMap to store categories and tags
+  Map<String, List<String>> _tagMap = {};
+
+  final List<Map<String, String>> _selectedTags = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTags();
+  }
 
   @override
   void dispose() {
@@ -22,6 +36,65 @@ class _AddLocationPageState extends State<AddLocationPage> {
     _reviewController.dispose();
     super.dispose();
   }
+
+  Future<void> _fetchTags() async {
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('metadata').doc('tags_list').get();
+      if(doc.exists) {
+        setState(() {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          _tagMap = data.map((key, value) => MapEntry(key, List<String>.from(value),));
+          _isLoadingTags = false;
+        });
+      }
+    } catch(error) {
+      debugPrint("Error fetching tag Map : $error");
+      setState(() => _isLoadingTags = false);
+    }
+  }
+
+  Widget _buildCategoryGroup(String categoryTitle, List<String> tags) {
+    if(tags.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text(
+          categoryTitle,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          children: tags.map((tagName) {
+            final bool isSelected = _selectedTags.any((t) => t['name'] ==  tagName);
+            return FilterChip(
+              label: Text(tagName, style: TextStyle(color: isSelected? Colors.white: Colors.black, fontSize: 13),),
+              selected: isSelected,
+              onSelected: (bool selected) {
+                setState(() {
+                if (selected) {
+                  _selectedTags.add({'name': tagName, 'category': categoryTitle});
+                } else{
+                  _selectedTags.removeWhere((t) => t['name'] == tagName);
+                }
+              });
+          },
+          backgroundColor: Colors.grey,
+          selectedColor: const Color(0xFF5A46FA),
+          showCheckmark: false,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
+          ),
+          );
+  }).toList(),
+  ),
+  ],
+  );
+}
+          
 
   void _submitLocation() async {
     if (!_formKey.currentState!.validate()) return;
@@ -32,6 +105,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
     final String review = _reviewController.text.trim();
 
     final String? errorResult = await LocationService().addLocation(
+      locationId: widget.locationId,
       locationName: locationName,
       review: review,
       rating: _currentRating,
@@ -47,18 +121,129 @@ class _AddLocationPageState extends State<AddLocationPage> {
       );
       //Navigator.pop(context);
     } else {
-      // Success
-      ScaffoldMessenger.of(context).showSnackBar(
+      try{
+        await _submitCategorizedTags(
+          locationId: widget.locationId,
+          userSelectedTags: _selectedTags
+        );
+        if (!mounted) return;
+        setState(() {
+          _isSaving = false;
+          _selectedTags.clear();
+          _currentRating = 0;
+        });
+        
+        //Success
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("'$locationName' added successfully"), backgroundColor: Colors.green),
-      );
-      //Navigator.pop(context);
-      _locationNameController.clear();
-      _reviewController.clear();
-      setState(() {
-        _currentRating = 0;
+        );
+
+        _locationNameController.clear();
+        _reviewController.clear();
+
+      } catch(tagError) {
+        if (!mounted) return;
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Location saved, but tags failed : $tagError"), backgroundColor: Colors.red),
+        );
+      }
+    }
+    }
+  
+
+  Future<void> _submitCategorizedTags({
+    required String locationId,
+    required List<Map<String, String>> userSelectedTags,
+  }) async {
+    DocumentReference locationRef = FirebaseFirestore.instance.collection('locations').doc(locationId);
+    return FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentSnapshot snapshot = await transaction.get(locationRef);
+      if(! snapshot.exists) {
+        throw Exception("Location record profile not found!");
+    }
+    Map<String, dynamic> allTags = snapshot.get('allTags') != null ?
+      Map<String, dynamic>.from(snapshot.get('allTags')) : {} ;
+    
+    for (var tag in userSelectedTags) {
+      String tagName = tag['name']!;
+      String tagCategory = tag['category']!;
+
+      if(allTags.containsKey(tagName)) {
+        allTags[tagName]['count'] = (allTags[tagName]['count'] ?? 0 ) + 1;
+      } else {
+        allTags[tagName] = {'category': tagCategory, 'count' : 1};
+      }
+      }
+      var sortedTagList = allTags.entries.map((entry) {
+        return {
+          'name': entry.key,
+          'category': entry.value['category'],
+          'count' : entry.value['count'],
+        };
+      }).toList();
+
+      sortedTagList.sort((a,b) => b['count'].compareTo(a['count']));
+      List<Map<String,dynamic>> updatedTopTags = sortedTagList.take(5)
+            .map((item) => {'name' : item['name'], 'category': item['category']}).toList();
+      transaction.update(locationRef,{'allTags': allTags, 'topTags': updatedTopTags});
       });
     }
-  }
+
+    void _customTagInputDialog() {
+      final TextEditingController customController = TextEditingController();
+      String selectedCategory = 'Vibes';
+      showDialog(
+        context: context,
+        builder: (contex) {
+          return AlertDialog(
+            title: const Text('Add Custom Tag'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: customController,
+                  decoration: const InputDecoration(hintText: 'e.g. Quiet Zone, Charging Dock'),
+                ),
+                const SizedBox(height: 16),
+                StatefulBuilder(
+                  builder: (context, setDialogState) {
+                    return DropdownButton<String>(
+                      value: selectedCategory,
+                      isExpanded: true,
+                      items: ['Vibes', 'Amenities', 'Facilities near-by'].map((cat) {
+                        return DropdownMenuItem(value: cat, child: Text(cat));
+                      }).toList(),
+                      onChanged: (val) => setDialogState(() => selectedCategory = val!),
+                    );
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+              ElevatedButton(
+                onPressed: () {
+                  final text = customController.text.trim();
+                  if(text.isNotEmpty) {
+                    setState(() {
+                      if(!_tagMap[selectedCategory]!.contains(text)) {
+                        _tagMap[selectedCategory]?.add(text);
+                      }
+                      if(!_selectedTags.any((t) => t['name'] == text)) {
+                        _selectedTags.add({'name' : text, 'category': selectedCategory});
+                      }
+                  });
+                  }
+                  Navigator.pop(context);
+                  },
+                child: const Text('Add'),
+                )
+              ],
+            );
+          },
+        );
+      }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +251,9 @@ class _AddLocationPageState extends State<AddLocationPage> {
       appBar: AppBar(
         title: const Text('Add New Location')
       ),
-      body: Padding(
+      body: _isLoadingTags
+      ? const Center(child: CircularProgressIndicator())
+      : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -119,6 +306,22 @@ class _AddLocationPageState extends State<AddLocationPage> {
                     );
                   }),
                 ),
+                const Divider(height: 20, thickness: 1),
+                const Text('Features of study spots',
+                style: TextStyle(fontSize:18, fontWeight: FontWeight.bold, color: Colors.purple),
+                ),
+                _buildCategoryGroup('Vibes', _tagMap['Vibes'] ?? []),
+                _buildCategoryGroup('Amenities', _tagMap['Amenities'] ?? []),
+                _buildCategoryGroup('Facilities near-by', _tagMap['Facilities near-by'] ?? []),
+                const SizedBox(height: 14),
+
+                TextButton.icon(
+                  style: TextButton.styleFrom(alignment: Alignment.centerLeft, padding: EdgeInsets.zero),
+                  icon: const Icon(Icons.add_circle_outline, color: Colors.purple),
+                  label: const Text('Cannot find a tag? Add Custom Tag', style: TextStyle(color: Colors.purple)),
+                  onPressed: _customTagInputDialog,
+                  ),
+    
                 const SizedBox(height: 20),
 
                 // review section

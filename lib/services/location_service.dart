@@ -6,6 +6,7 @@ class LocationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<String?> addLocation({
+    required String locationId,
     required String locationName,
     required String review,
     required int rating,
