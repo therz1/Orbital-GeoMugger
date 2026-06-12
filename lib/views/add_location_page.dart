@@ -5,6 +5,7 @@ import '../services/location_service.dart';
 class AddLocationPage extends StatefulWidget {
   final String locationId;
   const AddLocationPage({super.key, required this.locationId});
+  
 
   @override
   State<AddLocationPage> createState() => _AddLocationPageState();
@@ -23,6 +24,19 @@ class _AddLocationPageState extends State<AddLocationPage> {
   Map<String, List<String>> _tagMap = {};
 
   final List<Map<String, String>> _selectedTags = [];
+
+    Color _tagColor(String cateogry) {
+    switch(cateogry) {
+      case 'Vibes':
+        return const Color.fromARGB(255, 2, 224, 254);
+      case 'Amenities':
+        return const Color.fromARGB(255, 255, 153, 0);
+      case 'Facilities near-by':
+        return const Color.fromARGB(255, 112, 187, 69);
+      default:
+        return Colors.transparent;
+    }
+  }
 
   @override
   void initState() {
@@ -83,7 +97,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
               });
           },
           backgroundColor: Colors.grey,
-          selectedColor: const Color(0xFF5A46FA),
+          selectedColor: _tagColor(categoryTitle),
           showCheckmark: false,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
           side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
@@ -139,50 +153,50 @@ class _AddLocationPageState extends State<AddLocationPage> {
     }
   
 
-  Future<void> _submitCategorizedTags({
-    required String locationId,
-    required List<Map<String, String>> userSelectedTags,
-  }) async {
-    // return nothing if no tags selected.
-    if(userSelectedTags.isEmpty) return; // No tags to process, skip the function
-    DocumentReference locationRef = FirebaseFirestore.instance.collection('locations').doc(locationId);
-    return FirebaseFirestore.instance.runTransaction((transaction) async {
-      DocumentSnapshot snapshot = await transaction.get(locationRef);
-      if(! snapshot.exists) {
-        throw Exception("Location record profile not found!");
-    }
-    final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic> ? ?? {};
-    final Map<String, dynamic> allTags = snapshot.get('allTags') != null ?
-      Map<String, dynamic>.from(snapshot.get('allTags')) : {} ;
+  // Future<void> _submitCategorizedTags({
+  //   required String locationId,
+  //   required List<Map<String, String>> userSelectedTags,
+  // }) async {
+  //   // return nothing if no tags selected.
+  //   if(userSelectedTags.isEmpty) return; // No tags to process, skip the function
+  //   DocumentReference locationRef = FirebaseFirestore.instance.collection('locations').doc(locationId);
+  //   return FirebaseFirestore.instance.runTransaction((transaction) async {
+  //     DocumentSnapshot snapshot = await transaction.get(locationRef);
+  //     if(! snapshot.exists) {
+  //       throw Exception("Location record profile not found!");
+  //   }
+  //   final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic> ? ?? {};
+  //   final Map<String, dynamic> allTags = snapshot.get('allTags') != null ?
+  //     Map<String, dynamic>.from(snapshot.get('allTags')) : {} ;
     
-    for (var tag in userSelectedTags) {
-      String tagName = tag['name']!;
-      String tagCategory = tag['category']!;
+  //   for (var tag in userSelectedTags) {
+  //     String tagName = tag['name']!;
+  //     String tagCategory = tag['category']!;
 
-      if(allTags.containsKey(tagName)) {
-        final Map<String, dynamic> currentTagData = Map<String, dynamic>.from(allTags[tagName] as Map);
-        final int currentCount = currentTagData['count'] ?? 0.toInt();
-        currentTagData['count'] = currentCount + 1;
-        allTags[tagName]['count'] = (allTags[tagName]['count'] ?? 0 ) + 1;
-      } else {
-        allTags[tagName] = {'category': tagCategory, 'count' : 1};
-      }
-      }
-      final List<Map<String, dynamic>> sortedTagList = allTags.entries.map((entry) {
-        final Map<String, dynamic> tagVal = Map<String, dynamic>.from(entry.value as Map);
-        return {
-          'name': entry.key,
-          'category': tagVal['category'] ?? 'Vibes',
-          'count' : tagVal['count']?? 1 ,
-        };
-      }).toList();
+  //     if(allTags.containsKey(tagName)) {
+  //       final Map<String, dynamic> currentTagData = Map<String, dynamic>.from(allTags[tagName] as Map);
+  //       final int currentCount = currentTagData['count'] ?? 0.toInt();
+  //       currentTagData['count'] = currentCount + 1;
+  //       allTags[tagName]['count'] = (allTags[tagName]['count'] ?? 0 ) + 1;
+  //     } else {
+  //       allTags[tagName] = {'category': tagCategory, 'count' : 1};
+  //     }
+  //     }
+  //     final List<Map<String, dynamic>> sortedTagList = allTags.entries.map((entry) {
+  //       final Map<String, dynamic> tagVal = Map<String, dynamic>.from(entry.value as Map);
+  //       return {
+  //         'name': entry.key,
+  //         'category': tagVal['category'] ?? 'Vibes',
+  //         'count' : tagVal['count']?? 1 ,
+  //       };
+  //     }).toList();
 
-      sortedTagList.sort((a,b) => b['count'].compareTo(a['count']));
-      List<Map<String,dynamic>> updatedTopTags = sortedTagList.take(5)
-            .map((item) => {'name' : item['name'], 'category': item['category']}).toList();
-      transaction.update(locationRef,{'allTags': allTags, 'topTags': updatedTopTags});
-      });
-    }
+  //     sortedTagList.sort((a,b) => b['count'].compareTo(a['count']));
+  //     List<Map<String,dynamic>> updatedTopTags = sortedTagList.take(5)
+  //           .map((item) => {'name' : item['name'], 'category': item['category']}).toList();
+  //     transaction.update(locationRef,{'allTags': allTags, 'topTags': updatedTopTags});
+  //     });
+  //   }
 
     void _customTagInputDialog() {
       final TextEditingController customController = TextEditingController();
