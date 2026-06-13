@@ -99,7 +99,8 @@ class _HomeViewState extends State<HomeView> {
                       final String locationName = data['LocationName'] ?? 'Unknown Location';
                       final String review = data['Review'] ?? 'No review provided.';
                       final int rating = data['Rating'] ?? 0;
-                      final double avgRating = data['AverageRating'] ?? 0.0;
+                      final num rawRating = data['AverageRating'] ?? 0;
+                      final double avgRating = rawRating.toDouble();
 
                       final List<dynamic> topTags = data['topTags'] ?? [];
 

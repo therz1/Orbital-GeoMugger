@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
         currentBodyView = const SavedView();
         break;
       case 2:
-        currentBodyView = AddLocationPage(locationId: newLocationId);
+        currentBodyView = AddLocationPage();
         break;
       case 3:
         currentBodyView = const ProfileView();

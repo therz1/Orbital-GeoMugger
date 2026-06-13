@@ -88,15 +88,55 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                       .snapshots(),
               builder:(context, snapshot) {
                 double avgRating = 0.0;
-              
+                String imgUrl = '';
+
                 if (snapshot.hasData && snapshot.data!.exists) {
                   final data = snapshot.data!.data() as Map<String, dynamic>?;
-                  avgRating = (data?['AverageRating'] ?? 0.0).toDouble();
+                  final rawRating = data?['AverageRating'] ?? 0;
+                  avgRating = (rawRating).toDouble();
+                  imgUrl = data?['ImageUrl'] ?? '';
                 }
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Image Banner
+                    if (imgUrl.isNotEmpty)...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          imgUrl,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+
+                          // Loading placeholder
+                          loadingBuilder: (context, child, loadingProgress){
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              height: 200,
+                              color: Colors.grey[100],
+                              child: const Center(
+                                child: CircularProgressIndicator(strokeWidth:2, color: Colors.orange),
+                              ),
+                            );
+                          },
+
+                          // Error Display
+                          errorBuilder: (context, error, stackTrace){
+                            return Container(
+                              height: 200,
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
                     Text(
                       widget.locationName,
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
