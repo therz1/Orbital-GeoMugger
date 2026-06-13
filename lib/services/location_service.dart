@@ -6,9 +6,11 @@ class LocationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<String?> addLocation({
+    required String locationId,
     required String locationName,
     required String review,
     required int rating,
+    required List<Map<String, String>> userSelectedTags,
   }) async {
     try {
       final User? currentUser = _auth.currentUser;
@@ -16,14 +18,29 @@ class LocationService {
         return 'User not authenticated.';
       }
 
-      final DocumentReference locationRef = _firestore.collection('locations').doc();
+      final DocumentReference locationRef = _firestore.collection('locations').doc(locationId);
       final DocumentReference reviewRef = locationRef.collection('reviews').doc();
       final WriteBatch batch = _firestore.batch();
+
+      Map<String, dynamic> allTags = {};
+      for(var tag in userSelectedTags) {
+        String tagName = tag['name']!;
+        String tagCategory = tag['category']!;
+        allTags[tagName] = {'category': tagCategory, 'count' : 1};
+      }
+
+      List<Map<String, dynamic>> topTags = userSelectedTags.take(5).map((tag) => {
+        'name': tag['name']!,
+        'category': tag['category']!,
+      }).toList();
+
       batch.set(locationRef, {
         'LocationName': locationName,
         'AverageRating': rating.toDouble(), // Initial average rating is the first review's rating
         'ReviewCount': 1, // Initial review count is 1
         'timestamp': FieldValue.serverTimestamp(),
+        'allTags': allTags,
+        'topTags': topTags,
       });
 
       batch.set(reviewRef, {

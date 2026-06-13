@@ -15,6 +15,19 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   String _searchQuery = '';
 
+  Color _tagColor(String cateogry) {
+    switch(cateogry) {
+      case 'Vibes':
+        return const Color.fromARGB(255, 2, 224, 254);
+      case 'Amenities':
+        return const Color.fromARGB(255, 255, 153, 0);
+      case 'Facilities near-by':
+        return const Color.fromARGB(255, 112, 187, 69);
+      default:
+        return Colors.transparent;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
       return Scaffold(
@@ -88,6 +101,8 @@ class _HomeViewState extends State<HomeView> {
                       final int rating = data['Rating'] ?? 0;
                       final double avgRating = data['AverageRating'] ?? 0.0;
 
+                      final List<dynamic> topTags = data['topTags'] ?? [];
+
                       return Card(
                         elevation: 3,
                         margin: const EdgeInsets.symmetric(vertical: 8),
@@ -109,17 +124,50 @@ class _HomeViewState extends State<HomeView> {
                             );
                           },
                           child: ListTile(
+                            isThreeLine: topTags.isNotEmpty,
                             leading: CircleAvatar(
                               backgroundColor: Colors.brown,
                               child: const Icon(Icons.location_on, color: Colors.orange),
                             ),
                             title: Text(locationName),
                             //subtitle: Text(review),
-                            subtitle: Padding(
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                               Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: MainStarRatingWidget(rating: avgRating),
                             ),
+
+                            if (topTags.isNotEmpty) 
+                            Wrap(
+                              spacing: 4.0,
+                              runSpacing: 4.0,
+                              children: topTags.take(5).map((tagItem) {
+                                final Map<String, dynamic> tag = Map<String, dynamic>.from(tagItem as Map);
+                                final String name = tag['name'] ?? '';
+                                final String category = tag['category'] ?? '';
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: _tagColor(category),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    name,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                                ),
+                              // ==================================================================
+                            ],
                           ),
+                        ),
                       ),
                     );
                   },
