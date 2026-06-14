@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geo_mugger/widgets/tag_filter.dart';
 import '../services/location_service.dart';
 import 'location_page.dart';
 import '../widgets/searchbar.dart';
@@ -14,6 +15,15 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   String _searchQuery = '';
+  Map <String, List<String>> _tagMap = {};
+  final List<String> _selectedTags = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTags();
+  }
+  
 
   Color _tagColor(String cateogry) {
     switch(cateogry) {
@@ -28,6 +38,21 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
+  Future<void> _fetchTags() async {
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('metadata').doc('tags_list').get();
+      if(doc.exists) {
+        setState(() {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          _tagMap = data.map((key, value) => MapEntry(key, List<String>.from(value),));
+        });
+      }
+    } catch(error) {
+      debugPrint("Error fetching tag Map : $error");
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
       return Scaffold(
@@ -38,14 +63,59 @@ class _HomeViewState extends State<HomeView> {
         body: Column(
           children: [
             // Search bar
-            LocationSearchBar(
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.toLowerCase();
-                });
-              },
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: LocationSearchBar(
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value.toLowerCase();
+                        });
+                      },
+                    ),
+                  ),
+                  IconButton(icon: Badge(
+                    isLabelVisible: _selectedTags.isNotEmpty,
+                    label: Text(_selectedTags.length.toString()),
+                    child: const Icon(Icons.filter_list, size: 28),
+                  ),
+                  onPressed: () async {
+                    final List<String>? updatedFilter = await showDialog<List<String>>(
+                      context: context,
+                      builder: (context) => TagFilter(tagMap: _tagMap, initialSelectedTags: _selectedTags, ),
+                    );
+                    if (updatedFilter != null) {
+                      setState(() {
+                        _selectedTags.clear();
+                        _selectedTags.addAll(updatedFilter);
+                      });
+                    }
+                  },
+                  ),
+                ],
+              ),
             ),
-   
+            if (_selectedTags.isNotEmpty) 
+            Container(
+              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: _selectedTags.map((filterName) {
+                  return Padding(
+                    padding:const EdgeInsets.only(right: 6.0) ,
+                    child: InputChip(label: Text(filterName, style: const TextStyle(fontSize: 11)),
+                    onDeleted: () {
+                      setState(() => _selectedTags.remove(filterName));
+                    },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+                  
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: LocationService().getLocations(),
@@ -70,7 +140,16 @@ class _HomeViewState extends State<HomeView> {
                     final data = doc.data() as Map<String, dynamic>;
                     if (data['timestamp'] == null) return false; // Skip documents without timestamp
                     final String locationName = (data['LocationName'] ?? '').toString().toLowerCase();
-                    return locationName.contains(_searchQuery);
+                    
+                    final bool matchesText = locationName.contains(_searchQuery);
+                    bool matchesTags = true; 
+                    if(_selectedTags.isNotEmpty) {
+                      final Map<String,dynamic> allTagsMap = data['allTags'] != null
+                      ? Map<String, dynamic>.from(data['allTags'] as Map) : {};
+                      matchesTags = _selectedTags.every((filterTag) => allTagsMap.containsKey(filterTag));
+                    }
+                      // Default to true if no tags are selecte
+                    return matchesText && matchesTags;
                   }).toList();
 
                   // Safeguard check for empty results after filtering
