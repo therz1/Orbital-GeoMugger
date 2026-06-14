@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+//import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'add_location_page.dart';
 import 'home_view.dart';
@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     //generate location ID for every new location added. need to change from stateless to stateful
-    final String newLocationId = FirebaseFirestore.instance.collection('locations').doc().id;
+    //final String newLocationId = FirebaseFirestore.instance.collection('locations').doc().id;
     Widget currentBodyView;
     switch(_selectedIndex) {
       case 0:
