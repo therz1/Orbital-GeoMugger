@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../services/location_service.dart';
 import 'location_page.dart';
 import '../widgets/searchbar.dart';
@@ -26,6 +27,17 @@ class _HomeViewState extends State<HomeView> {
       default:
         return Colors.transparent;
     }
+  }
+
+  Widget _buildFallbackIcon() {
+    return Container(
+      color: Colors.orange[50],
+      child: const Icon(
+        Icons.location_on, 
+        color: Colors.orange, 
+        size: 28
+      ),
+    );
   }
 
   @override
@@ -99,7 +111,9 @@ class _HomeViewState extends State<HomeView> {
                       final String locationName = data['LocationName'] ?? 'Unknown Location';
                       final String review = data['Review'] ?? 'No review provided.';
                       final int rating = data['Rating'] ?? 0;
-                      final double avgRating = data['AverageRating'] ?? 0.0;
+                      final num rawRating = data['AverageRating'] ?? 0;
+                      final double avgRating = rawRating.toDouble();
+                      final String imgUrl = data['ImageUrl'] ?? '';
 
                       final List<dynamic> topTags = data['topTags'] ?? [];
 
@@ -123,12 +137,41 @@ class _HomeViewState extends State<HomeView> {
                               ),
                             );
                           },
+
                           child: ListTile(
                             isThreeLine: topTags.isNotEmpty,
+                            leading: SizedBox(
+                              width: 60,
+                              height: 60,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: imgUrl.isNotEmpty ? CachedNetworkImage(
+                                  imageUrl: imgUrl,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.grey[100],
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.black
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) => _buildFallbackIcon(),
+                                )
+                                : _buildFallbackIcon(),
+                              ),
+                            ),
+                            /*
                             leading: CircleAvatar(
                               backgroundColor: Colors.brown,
                               child: const Icon(Icons.location_on, color: Colors.orange),
                             ),
+                            */
                             title: Text(locationName),
                             //subtitle: Text(review),
                             subtitle: Column(

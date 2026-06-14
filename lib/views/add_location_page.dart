@@ -1,11 +1,16 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' ;
+import 'package:image_picker/image_picker.dart';
 import '../services/location_service.dart';
 
 class AddLocationPage extends StatefulWidget {
-  final String locationId;
-  const AddLocationPage({super.key, required this.locationId});
-  
+  //final String locationId;
+  const AddLocationPage({
+    super.key, 
+    //required this.locationId
+  });
 
   @override
   State<AddLocationPage> createState() => _AddLocationPageState();
@@ -19,10 +24,14 @@ class _AddLocationPageState extends State<AddLocationPage> {
   int _currentRating = 0; // Default rating value
   bool _isSaving  = false;
   bool _isLoadingTags = true;
+  final ImagePicker _picker = ImagePicker();
+  
+  XFile? _pickerFile;          // Stores the cross-platform image file reference
+  String? _webImagePreviewUrl;  // Stores the browser blob URL string (Web only)
+  File? _capturedImage;         // Stores the native File pointer (Mobile only)
   
   //create a tagMap to store categories and tags
   Map<String, List<String>> _tagMap = {};
-
   final List<Map<String, String>> _selectedTags = [];
 
     Color _tagColor(String cateogry) {
@@ -95,20 +104,51 @@ class _AddLocationPageState extends State<AddLocationPage> {
                   _selectedTags.removeWhere((t) => t['name'] == tagName);
                 }
               });
-          },
-          backgroundColor: Colors.grey,
-          selectedColor: _tagColor(categoryTitle),
-          showCheckmark: false,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
-          ),
+            },
+            backgroundColor: Colors.grey,
+            selectedColor: _tagColor(categoryTitle),
+            showCheckmark: false,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
+            ),
           );
-  }).toList(),
-  ),
+    }).toList(),
+    ),
   ],
   );
 }
           
+    Future<void> _takePhoto() async {
+    try {
+      // 📸 This single line works perfectly on Web, Android, and iOS!
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 70, 
+        maxWidth: 1200,
+      );
+
+      if (photo != null) {
+        setState(() {
+          // 1. Save the main cross-platform file container for Firebase
+          _pickerFile = photo; 
+
+          // 2. Setup the visual preview based on where the app is running
+          if (kIsWeb) {
+            // Web browsers look at the XFile path as a temporary blob URL
+            _webImagePreviewUrl = photo.path; 
+          } else {
+            // Mobile devices need a standard File system pointer
+            _capturedImage = File(photo.path);
+          }
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error opening camera: $e')),
+      );
+    }
+  }
 
   void _submitLocation() async {
     if (!_formKey.currentState!.validate()) return;
@@ -119,11 +159,12 @@ class _AddLocationPageState extends State<AddLocationPage> {
     final String review = _reviewController.text.trim();
 
     final String? errorResult = await LocationService().addLocation(
-      locationId: widget.locationId,
+      //locationId: widget.locationId,
       locationName: locationName,
       review: review,
       rating: _currentRating,
       userSelectedTags: _selectedTags,
+      imageFile: _pickerFile,
     );
 
     if (!mounted) return;
@@ -136,9 +177,15 @@ class _AddLocationPageState extends State<AddLocationPage> {
       );
       //Navigator.pop(context);
     } else {
+        // CLEARS THE PAGE AFTER SUBMISSION
         setState(() {
           _selectedTags.clear();
           _currentRating = 0;
+
+          _pickerFile = null;          // Stores the cross-platform image file reference
+          _webImagePreviewUrl = null;  // Stores the browser blob URL string (Web only)
+          _capturedImage = null; 
+
         });
         
         //Success
@@ -152,51 +199,6 @@ class _AddLocationPageState extends State<AddLocationPage> {
       } 
     }
   
-
-  // Future<void> _submitCategorizedTags({
-  //   required String locationId,
-  //   required List<Map<String, String>> userSelectedTags,
-  // }) async {
-  //   // return nothing if no tags selected.
-  //   if(userSelectedTags.isEmpty) return; // No tags to process, skip the function
-  //   DocumentReference locationRef = FirebaseFirestore.instance.collection('locations').doc(locationId);
-  //   return FirebaseFirestore.instance.runTransaction((transaction) async {
-  //     DocumentSnapshot snapshot = await transaction.get(locationRef);
-  //     if(! snapshot.exists) {
-  //       throw Exception("Location record profile not found!");
-  //   }
-  //   final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic> ? ?? {};
-  //   final Map<String, dynamic> allTags = snapshot.get('allTags') != null ?
-  //     Map<String, dynamic>.from(snapshot.get('allTags')) : {} ;
-    
-  //   for (var tag in userSelectedTags) {
-  //     String tagName = tag['name']!;
-  //     String tagCategory = tag['category']!;
-
-  //     if(allTags.containsKey(tagName)) {
-  //       final Map<String, dynamic> currentTagData = Map<String, dynamic>.from(allTags[tagName] as Map);
-  //       final int currentCount = currentTagData['count'] ?? 0.toInt();
-  //       currentTagData['count'] = currentCount + 1;
-  //       allTags[tagName]['count'] = (allTags[tagName]['count'] ?? 0 ) + 1;
-  //     } else {
-  //       allTags[tagName] = {'category': tagCategory, 'count' : 1};
-  //     }
-  //     }
-  //     final List<Map<String, dynamic>> sortedTagList = allTags.entries.map((entry) {
-  //       final Map<String, dynamic> tagVal = Map<String, dynamic>.from(entry.value as Map);
-  //       return {
-  //         'name': entry.key,
-  //         'category': tagVal['category'] ?? 'Vibes',
-  //         'count' : tagVal['count']?? 1 ,
-  //       };
-  //     }).toList();
-
-  //     sortedTagList.sort((a,b) => b['count'].compareTo(a['count']));
-  //     List<Map<String,dynamic>> updatedTopTags = sortedTagList.take(5)
-  //           .map((item) => {'name' : item['name'], 'category': item['category']}).toList();
-  //     transaction.update(locationRef,{'allTags': allTags, 'topTags': updatedTopTags});
-  //     });
-  //   }
 
     void _customTagInputDialog() {
       final TextEditingController customController = TextEditingController();
@@ -269,7 +271,32 @@ class _AddLocationPageState extends State<AddLocationPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-
+                GestureDetector(
+                  onTap: _takePhoto,
+                  child: Container(
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color:Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _pickerFile == null
+                        ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.camera_alt, size: 40, color: Colors.grey),
+                              SizedBox(height: 8),
+                              Text('Click to Snap a Photo (Optional)', style: TextStyle(color: Colors.grey)),
+                            ],
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: kIsWeb
+                                ? Image.network(_webImagePreviewUrl!, fit: BoxFit.cover, width: double.infinity)
+                                : Image.file(_capturedImage!, fit: BoxFit.cover, width: double.infinity),
+                          ),
+                  ),
+                ),
+                
                 // location name section
                 const Text(
                   'Location Name', 
@@ -389,3 +416,52 @@ class _AddLocationPageState extends State<AddLocationPage> {
     );
   }
 }
+
+
+
+
+
+  // Future<void> _submitCategorizedTags({
+  //   required String locationId,
+  //   required List<Map<String, String>> userSelectedTags,
+  // }) async {
+  //   // return nothing if no tags selected.
+  //   if(userSelectedTags.isEmpty) return; // No tags to process, skip the function
+  //   DocumentReference locationRef = FirebaseFirestore.instance.collection('locations').doc(locationId);
+  //   return FirebaseFirestore.instance.runTransaction((transaction) async {
+  //     DocumentSnapshot snapshot = await transaction.get(locationRef);
+  //     if(! snapshot.exists) {
+  //       throw Exception("Location record profile not found!");
+  //   }
+  //   final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic> ? ?? {};
+  //   final Map<String, dynamic> allTags = snapshot.get('allTags') != null ?
+  //     Map<String, dynamic>.from(snapshot.get('allTags')) : {} ;
+    
+  //   for (var tag in userSelectedTags) {
+  //     String tagName = tag['name']!;
+  //     String tagCategory = tag['category']!;
+
+  //     if(allTags.containsKey(tagName)) {
+  //       final Map<String, dynamic> currentTagData = Map<String, dynamic>.from(allTags[tagName] as Map);
+  //       final int currentCount = currentTagData['count'] ?? 0.toInt();
+  //       currentTagData['count'] = currentCount + 1;
+  //       allTags[tagName]['count'] = (allTags[tagName]['count'] ?? 0 ) + 1;
+  //     } else {
+  //       allTags[tagName] = {'category': tagCategory, 'count' : 1};
+  //     }
+  //     }
+  //     final List<Map<String, dynamic>> sortedTagList = allTags.entries.map((entry) {
+  //       final Map<String, dynamic> tagVal = Map<String, dynamic>.from(entry.value as Map);
+  //       return {
+  //         'name': entry.key,
+  //         'category': tagVal['category'] ?? 'Vibes',
+  //         'count' : tagVal['count']?? 1 ,
+  //       };
+  //     }).toList();
+
+  //     sortedTagList.sort((a,b) => b['count'].compareTo(a['count']));
+  //     List<Map<String,dynamic>> updatedTopTags = sortedTagList.take(5)
+  //           .map((item) => {'name' : item['name'], 'category': item['category']}).toList();
+  //     transaction.update(locationRef,{'allTags': allTags, 'topTags': updatedTopTags});
+  //     });
+  //   }

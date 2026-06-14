@@ -4,6 +4,7 @@ import '../widgets/star_display.dart';
 import '../widgets/main_star_display.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'add_review_page.dart';
 
 class LocationDetailPage extends StatefulWidget {
@@ -88,15 +89,50 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                       .snapshots(),
               builder:(context, snapshot) {
                 double avgRating = 0.0;
-              
+                String imgUrl = '';
+
                 if (snapshot.hasData && snapshot.data!.exists) {
                   final data = snapshot.data!.data() as Map<String, dynamic>?;
-                  avgRating = (data?['AverageRating'] ?? 0.0).toDouble();
+                  final rawRating = data?['AverageRating'] ?? 0;
+                  avgRating = (rawRating).toDouble();
+                  imgUrl = data?['ImageUrl'] ?? '';
                 }
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Image Banner
+                    if (imgUrl.isNotEmpty)...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: CachedNetworkImage(
+                          imageUrl: imgUrl,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+
+                          // Loading placeholder
+                          placeholder:(context, url) => Container( 
+                              height: 200,
+                              color: Colors.grey[100],
+                              child: const Center(
+                                child: CircularProgressIndicator(strokeWidth:2, color: Colors.orange),
+                              ),
+                          ),
+                         
+                          // Error Display
+                          errorWidget: (context, url, error) => Container(
+                              height: 200,
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
+                              ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
                     Text(
                       widget.locationName,
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

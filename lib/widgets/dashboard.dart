@@ -4,7 +4,7 @@ import '../views/home_view.dart';
 import '../views/saved_view.dart';
 import '../views/profile_view.dart';
 import '../services/auth_service.dart';
-import '../views/login_screen.dart';
+//import '../views/login_screen.dart';
 
 // File contains the home screen after successful login.
 class HomePage extends StatefulWidget {
