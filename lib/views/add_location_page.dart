@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' ;
 import '../services/location_service.dart';
+import '../widgets/tag_selection.dart';
 
 class AddLocationPage extends StatefulWidget {
   final String locationId;
@@ -67,47 +68,47 @@ class _AddLocationPageState extends State<AddLocationPage> {
     }
   }
 
-  Widget _buildCategoryGroup(String categoryTitle, List<String> tags) {
-    if(tags.isEmpty) return const SizedBox.shrink();
+//   Widget _buildCategoryGroup(String categoryTitle, List<String> tags) {
+//     if(tags.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Text(
-          categoryTitle,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
-          children: tags.map((tagName) {
-            final bool isSelected = _selectedTags.any((t) => t['name'] ==  tagName);
-            return FilterChip(
-              label: Text(tagName, style: TextStyle(color: isSelected? Colors.white: Colors.black, fontSize: 13),),
-              selected: isSelected,
-              onSelected: (bool selected) {
-                setState(() {
-                if (selected) {
-                  _selectedTags.add({'name': tagName, 'category': categoryTitle});
-                } else{
-                  _selectedTags.removeWhere((t) => t['name'] == tagName);
-                }
-              });
-          },
-          backgroundColor: Colors.grey,
-          selectedColor: _tagColor(categoryTitle),
-          showCheckmark: false,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
-          ),
-          );
-  }).toList(),
-  ),
-  ],
-  );
-}
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         const SizedBox(height: 16),
+//         Text(
+//           categoryTitle,
+//           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+//         ),
+//         const SizedBox(height: 8),
+//         Wrap(
+//           spacing: 8.0,
+//           runSpacing: 8.0,
+//           children: tags.map((tagName) {
+//             final bool isSelected = _selectedTags.any((t) => t['name'] ==  tagName);
+//             return FilterChip(
+//               label: Text(tagName, style: TextStyle(color: isSelected? Colors.white: Colors.black, fontSize: 13),),
+//               selected: isSelected,
+//               onSelected: (bool selected) {
+//                 setState(() {
+//                 if (selected) {
+//                   _selectedTags.add({'name': tagName, 'category': categoryTitle});
+//                 } else{
+//                   _selectedTags.removeWhere((t) => t['name'] == tagName);
+//                 }
+//               });
+//           },
+//           backgroundColor: Colors.grey,
+//           selectedColor: _tagColor(categoryTitle),
+//           showCheckmark: false,
+//           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
+//           side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
+//           ),
+//           );
+//   }).toList(),
+//   ),
+//   ],
+//   );
+// }
           
 
   void _submitLocation() async {
@@ -318,9 +319,21 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 const Text('Features of study spots',
                 style: TextStyle(fontSize:18, fontWeight: FontWeight.bold, color: Colors.purple),
                 ),
-                _buildCategoryGroup('Vibes', _tagMap['Vibes'] ?? []),
-                _buildCategoryGroup('Amenities', _tagMap['Amenities'] ?? []),
-                _buildCategoryGroup('Facilities near-by', _tagMap['Facilities near-by'] ?? []),
+                TagSelection(categoryTitle: 'Vibes', tags: _tagMap['Vibes'] ?? [], selectedTags: _selectedTags, 
+                getTagColor: _tagColor,
+                onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
+                onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+
+                TagSelection(categoryTitle: 'Amenities', tags: _tagMap['Amenities'] ?? [], selectedTags: _selectedTags, 
+                getTagColor: _tagColor,
+                onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
+                onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+
+                TagSelection(categoryTitle: 'Facilities near-by', tags: _tagMap['Facilities near-by'] ?? [], selectedTags: _selectedTags, 
+                getTagColor: _tagColor,
+                onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
+                onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+
                 const SizedBox(height: 14),
 
                 TextButton.icon(
