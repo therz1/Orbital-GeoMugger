@@ -142,10 +142,39 @@ class LocationService {
     required String review,
     required int rating,
     required String userId,
+    XFile? imageFile,
   }) async {
     try {
+      final User? currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        return 'User not authenticated.';
+      }
+
       final locationRef = _firestore.collection('locations').doc(locationId);
       final reviewRef = locationRef.collection('reviews').doc();
+      final imageRef = locationRef.collection('images').doc();
+
+      String? downloadUrl;
+      if(imageFile != null){
+          String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+          Reference storageRef = _storage.ref().child('location_images').child('${locationId}_$fileName');
+
+          if (kIsWeb) {
+            // Read file bytes out into local runtime memory arrays
+            final Uint8List rawBytes = await imageFile.readAsBytes();
+            UploadTask uploadTask = storageRef.putData(
+              rawBytes,
+              SettableMetadata(contentType: 'image/jpeg'),
+            );
+            TaskSnapshot storageSnapshot = await uploadTask;
+            downloadUrl = await storageSnapshot.ref.getDownloadURL();
+          } else {
+            // Mobile fallback strategy using native File pointers
+            UploadTask uploadTask = storageRef.putFile(File(imageFile.path));
+            TaskSnapshot storageSnapshot = await uploadTask;
+            downloadUrl = await storageSnapshot.ref.getDownloadURL();
+          }
+        }
 
       await _firestore.runTransaction((transaction) async {
         final locationSnapshot = await transaction.get(locationRef);
@@ -160,12 +189,13 @@ class LocationService {
         
         final int newCount = currentCount + 1;
         final double newAvg = currentAvg + ((rating - currentAvg) / newCount);
-        
+
         // Add the new review to 'reviews' subcollection
         transaction.set(reviewRef, {
           'Review': review,
           'Rating': rating,
           'userId': userId,
+          'imageUrl': downloadUrl ?? '',
           'timestamp': FieldValue.serverTimestamp(),
         });
 
@@ -174,6 +204,15 @@ class LocationService {
           'AverageRating': newAvg,
           'ReviewCount': newCount,
         });
+
+        if (downloadUrl != null){
+          transaction.set(imageRef, {
+            'userId': currentUser.uid,
+            'imageUrl': downloadUrl, 
+            'reviewId': reviewRef.id,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
       });
       return null; // Review added and average rating updated successfully
     } catch (e) {
