@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' ;
 import '../services/location_service.dart';
-import '../widgets/tag_selection.dart';
+import '../widgets/Reviews/star_rating.dart';
+import '../widgets/Reviews/tag_selection.dart';
 
 class AddLocationPage extends StatefulWidget {
   final String locationId;
@@ -294,27 +295,11 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 const SizedBox(height: 20),
 
                 // rating section
-                const Text(
-                  'Rating', 
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                StarRating(
+                  currentRating: _currentRating,
+                  onRatingChanged: (rating) => setState(() => _currentRating = rating),
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: List.generate(5, (index) {
-                    final int starValue = index + 1;
-                    return IconButton(
-                      icon: Icon(
-                        Icons.star,
-                        color: starValue <= _currentRating ? Colors.amber : Colors.grey,
-                        size: 32,
-                      ),
-                      onPressed: (){ 
-                        setState(() => _currentRating = starValue);
-                      },
-                    );
-                  }),
-                ),
+                
                 const Divider(height: 20, thickness: 1),
                 const Text('Features of study spots',
                 style: TextStyle(fontSize:18, fontWeight: FontWeight.bold, color: Colors.purple),

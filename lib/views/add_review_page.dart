@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart' ;
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/location_service.dart';
+import '../widgets/Reviews/star_rating.dart';
+import '../widgets/Reviews/tag_selection.dart';
 
 class AddReviewPage extends StatefulWidget {
   final String locationId;
@@ -32,6 +34,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
     _reviewController.dispose();
     super.dispose();
   }
+
 
   void _submitReview() async {
     if (!_formKey.currentState!.validate()) return;
@@ -94,28 +97,40 @@ class _AddReviewPageState extends State<AddReviewPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // rating section
-                const Text(
-                  'Rating', 
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                
+                StarRating(
+                  currentRating: _currentRating,
+                  onRatingChanged: (rating) => setState(() => _currentRating = rating),
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: List.generate(5, (index) {
-                    final int starValue = index + 1;
-                    return IconButton(
-                      icon: Icon(
-                        Icons.star,
-                        color: starValue <= _currentRating ? Colors.amber : Colors.grey,
-                        size: 32,
-                      ),
-                      onPressed: (){ 
-                        setState(() => _currentRating = starValue);
-                      },
-                    );
-                  }),
+                const Divider(height: 20, thickness: 1),
+                const Text('Features of study spots',
+                style: TextStyle(fontSize:18, fontWeight: FontWeight.bold, color: Colors.purple),
                 ),
+
+                TagSelection(categoryTitle: 'Vibes', tags: _tagMap['Vibes'] ?? [], selectedTags: _selectedTags, 
+                getTagColor: _tagColor,
+                onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
+                onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+
+                TagSelection(categoryTitle: 'Amenities', tags: _tagMap['Amenities'] ?? [], selectedTags: _selectedTags, 
+                getTagColor: _tagColor,
+                onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
+                onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+
+                TagSelection(categoryTitle: 'Facilities near-by', tags: _tagMap['Facilities near-by'] ?? [], selectedTags: _selectedTags, 
+                getTagColor: _tagColor,
+                onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
+                onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+
+                const SizedBox(height: 14),
+
+                TextButton.icon(
+                  style: TextButton.styleFrom(alignment: Alignment.centerLeft, padding: EdgeInsets.zero),
+                  icon: const Icon(Icons.add_circle_outline, color: Colors.purple),
+                  label: const Text('Cannot find a tag? Add Custom Tag', style: TextStyle(color: Colors.purple)),
+                  onPressed: _customTagInputDialog,
+                  ),
+    
                 const SizedBox(height: 20),
 
                 // review section
