@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' ;
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/location_service.dart';
@@ -28,12 +29,109 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   int _currentRating = 0; // Default rating value
   bool _isSaving  = false;
+  bool _isLoadingTags = true;
+
+  Map<String, List<String>> _tagMap = {};
+  final List<Map<String, String>> _selectedTags = [];
 
   @override
   void dispose() {
     _reviewController.dispose();
     super.dispose();
   }
+  @override
+  void initState() {
+    super.initState();
+    _fetchTags();
+  }
+
+  Future<void> _fetchTags() async {
+  try {
+    DocumentSnapshot doc = await FirebaseFirestore.instance.collection('metadata').doc('tags_list').get();
+    if(doc.exists) {
+      setState(() {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        _tagMap = data.map((key, value) => MapEntry(key, List<String>.from(value),));
+        _isLoadingTags = false;
+      });
+    }
+  } catch(error) {
+    debugPrint("Error fetching tag Map : $error");
+    setState(() => _isLoadingTags = false);
+  }
+}
+
+  Color _tagColor(String cateogry) {
+  switch(cateogry) {
+    case 'Vibes':
+      return const Color.fromARGB(255, 2, 224, 254);
+    case 'Amenities':
+      return const Color.fromARGB(255, 255, 153, 0);
+    case 'Facilities near-by':
+      return const Color.fromARGB(255, 112, 187, 69);
+    default:
+      return Colors.transparent;
+  }
+}
+
+
+
+//reuse from add_location
+  void _customTagInputDialog() {
+  final TextEditingController customController = TextEditingController();
+  String selectedCategory = 'Vibes';
+  showDialog(
+    context: context,
+    builder: (contex) {
+      return AlertDialog(
+        title: const Text('Add Custom Tag'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: customController,
+              decoration: const InputDecoration(hintText: 'e.g. Quiet Zone, Charging Dock'),
+            ),
+            const SizedBox(height: 16),
+            StatefulBuilder(
+              builder: (context, setDialogState) {
+                return DropdownButton<String>(
+                  value: selectedCategory,
+                  isExpanded: true,
+                  items: ['Vibes', 'Amenities', 'Facilities near-by'].map((cat) {
+                    return DropdownMenuItem(value: cat, child: Text(cat));
+                  }).toList(),
+                  onChanged: (val) => setDialogState(() => selectedCategory = val!),
+                );
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              final text = customController.text.trim();
+              if(text.isNotEmpty) {
+                setState(() {
+                  if(!_tagMap[selectedCategory]!.contains(text)) {
+                    _tagMap[selectedCategory]?.add(text);
+                  }
+                  if(!_selectedTags.any((t) => t['name'] == text)) {
+                    _selectedTags.add({'name' : text, 'category': selectedCategory});
+                  }
+              });
+              }
+              Navigator.pop(context);
+              },
+            child: const Text('Add'),
+            )
+          ],
+        );
+      },
+    );
+  }
+
 
 
   void _submitReview() async {
@@ -71,17 +169,35 @@ class _AddReviewPageState extends State<AddReviewPage> {
       );
       //Navigator.pop(context);
     } else {
+      try {
+        if (_selectedTags.isNotEmpty) {
+          await LocationService().updateLocationTags(
+            locationId: widget.locationId,
+            userSelectedTags: _selectedTags,
+          );
+        }
+        if(! mounted) return; 
+        setState(() {
+          _isSaving = false;
+          _selectedTags.clear();
+          _currentRating = 0;
+        });
       // Success
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Review added successfully"), backgroundColor: Colors.green),
       );
       //Navigator.pop(context);
       _reviewController.clear();
-      setState(() {
-        _currentRating = 0;
-      });
+      } catch (tagError) {
+        if(!mounted) return;
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Review saved, tags update failed: $tagError"), backgroundColor: Colors.red),
+        );
+      }
+      }
     }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +205,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
       appBar: AppBar(
         title: Text(widget.locationName),
       ),
-      body: Padding(
+      body: _isLoadingTags ? const Center(child: CircularProgressIndicator()):
+       Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
