@@ -48,27 +48,11 @@ class _AddReviewPageState extends State<AddReviewPage> {
     _reviewController.dispose();
     super.dispose();
   }
-  @override
+ @override
   void initState() {
     super.initState();
     _fetchTags();
   }
-
-  Future<void> _fetchTags() async {
-  try {
-    DocumentSnapshot doc = await FirebaseFirestore.instance.collection('metadata').doc('tags_list').get();
-    if(doc.exists) {
-      setState(() {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        _tagMap = data.map((key, value) => MapEntry(key, List<String>.from(value),));
-        _isLoadingTags = false;
-      });
-    }
-  } catch(error) {
-    debugPrint("Error fetching tag Map : $error");
-    setState(() => _isLoadingTags = false);
-  }
-}
 
   Color _tagColor(String cateogry) {
   switch(cateogry) {
@@ -84,8 +68,24 @@ class _AddReviewPageState extends State<AddReviewPage> {
 }
 
 
+// reusing from add_location_page.dart,
+  Future<void> _fetchTags() async {
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('metadata').doc('tags_list').get();
+      if(doc.exists) {
+        setState(() {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          _tagMap = data.map((key, value) => MapEntry(key, List<String>.from(value),));
+          _isLoadingTags = false;
+        });
+      }
+    } catch(error) {
+      debugPrint("Error fetching tag Map : $error");
+      setState(() => _isLoadingTags = false);
+    }
+  }
 
-//reuse from add_location
+  //reuse from add_location
   void _customTagInputDialog() {
   final TextEditingController customController = TextEditingController();
   String selectedCategory = 'Vibes';
@@ -140,7 +140,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
       },
     );
   }
-
+ 
 
 
   void _submitReview() async {
@@ -187,24 +187,24 @@ class _AddReviewPageState extends State<AddReviewPage> {
           );
         }
         if(! mounted) return; 
-        setState(() {
-          _isSaving = false;
-          _selectedTags.clear();
-          _currentRating = 0;
-        });
+      setState(() {
+        _isSaving = false;
+        _selectedTags.clear();
+        _currentRating = 0;
+      });
       // Success
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Review added successfully"), backgroundColor: Colors.green),
       );
       //Navigator.pop(context);
       _reviewController.clear();
-      } catch (tagError) {
-        if(!mounted) return;
-        setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
+    } catch (tagError) {
+      if(!mounted) return;
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Review saved, tags update failed: $tagError"), backgroundColor: Colors.red),
-        );
-      }
+      );
+    }
       }
     }
 
@@ -246,8 +246,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
       appBar: AppBar(
         title: Text(widget.locationName),
       ),
-      body: _isLoadingTags ? const Center(child: CircularProgressIndicator()):
-       Padding(
+      body: _isLoadingTags ? const Center(child: CircularProgressIndicator()) : 
+      Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -258,7 +258,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                 
                 StarRating(
                   currentRating: _currentRating,
-                  onRatingChanged: (rating) => setState(() => _currentRating = rating),
+                  onRatingChanged: (rating) => setState(() => _currentRating = rating),),
                 // Photo Section
                 GestureDetector(
                   onTap: _takePhoto,
