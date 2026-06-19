@@ -196,9 +196,69 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                     itemCount: documents.length,
                     itemBuilder: (context, index) {
                       final Map<String, dynamic> data = documents[index].data() as Map<String, dynamic>;
-                      return ListTile(
-                        title: StarRatingWidget(rating: data['Rating']), // Display star rating for each review
-                        subtitle: Text(data['Review'] ?? 'No review available'),                   
+                      final String imgUrl = data['imageUrl'] ?? '';
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column (
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children:[
+                              if (imgUrl.isNotEmpty)...[
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: CachedNetworkImage(
+                                    imageUrl: imgUrl,
+                                    height: 200,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+
+                                    // Loading placeholder
+                                    placeholder:(context, url) => Container( 
+                                        height: 200,
+                                        color: Colors.grey[100],
+                                        child: const Center(
+                                          child: CircularProgressIndicator(strokeWidth:2, color: Colors.orange),
+                                        ),
+                                    ),
+                                  
+                                    // Error Display
+                                    errorWidget: (context, url, error) => Container(
+                                        height: 200,
+                                        color: Colors.grey[200],
+                                        child: const Center(
+                                          child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
+                                        ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                  
+                              Row (
+                                children: [
+                                  StarRatingWidget(rating: data['Rating']),
+                                  const Spacer(),
+                                  Text(
+                                    data['timestamp'] != null 
+                                        ? (data['timestamp'] as Timestamp).toDate().toString().substring(0, 10)
+                                        : '',
+                                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                data['Review'] ?? 'No review available',
+                              ), 
+                              const SizedBox(height: 20),
+                            ]
+                          ),
+                        ),
                       );
                     },
                   );
