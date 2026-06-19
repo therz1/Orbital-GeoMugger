@@ -1,16 +1,23 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 
 class LocationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<String?> addLocation({
-    required String locationId,
+    //required String locationId,
     required String locationName,
     required String review,
     required int rating,
     required List<Map<String, String>> userSelectedTags,
+    XFile? imageFile,
   }) async {
     try {
       final User? currentUser = _auth.currentUser;
@@ -18,8 +25,34 @@ class LocationService {
         return 'User not authenticated.';
       }
 
+      final String locationId = _firestore.collection('locations').doc().id;
       final DocumentReference locationRef = _firestore.collection('locations').doc(locationId);
       final DocumentReference reviewRef = locationRef.collection('reviews').doc();
+      final DocumentReference imageRef = locationRef.collection('images').doc();
+
+      String? downloadUrl;
+
+      if(imageFile != null){
+        String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        Reference storageRef = _storage.ref().child('location_images').child('${locationId}_$fileName');
+
+        if (kIsWeb) {
+          // Read file bytes out into local runtime memory arrays
+          final Uint8List rawBytes = await imageFile.readAsBytes();
+          UploadTask uploadTask = storageRef.putData(
+            rawBytes,
+            SettableMetadata(contentType: 'image/jpeg'),
+          );
+          TaskSnapshot storageSnapshot = await uploadTask;
+          downloadUrl = await storageSnapshot.ref.getDownloadURL();
+        } else {
+          // Mobile fallback strategy using native File pointers
+          UploadTask uploadTask = storageRef.putFile(File(imageFile.path));
+          TaskSnapshot storageSnapshot = await uploadTask;
+          downloadUrl = await storageSnapshot.ref.getDownloadURL();
+        }
+    }
+      
       final WriteBatch batch = _firestore.batch();
 
       Map<String, dynamic> allTags = {};
@@ -38,17 +71,29 @@ class LocationService {
         'LocationName': locationName,
         'AverageRating': rating.toDouble(), // Initial average rating is the first review's rating
         'ReviewCount': 1, // Initial review count is 1
+        'ImageUrl': downloadUrl ?? '',
         'timestamp': FieldValue.serverTimestamp(),
         'allTags': allTags,
         'topTags': topTags,
       });
 
       batch.set(reviewRef, {
-      'userId': currentUser.uid,
-      'Rating': rating,
-      'Review': review,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+        'userId': currentUser.uid,
+        'Rating': rating,
+        'Review': review,
+        'imageUrl': downloadUrl ?? '',
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      if (downloadUrl != null){
+        batch.set(imageRef, {
+          'userId': currentUser.uid,
+          'imageUrl': downloadUrl, 
+          'reviewId': reviewRef.id,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+
       await batch.commit();
       return null; // Location added successfully
     } catch (e) {
@@ -97,10 +142,39 @@ class LocationService {
     required String review,
     required int rating,
     required String userId,
+    XFile? imageFile,
   }) async {
     try {
+      final User? currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        return 'User not authenticated.';
+      }
+
       final locationRef = _firestore.collection('locations').doc(locationId);
       final reviewRef = locationRef.collection('reviews').doc();
+      final imageRef = locationRef.collection('images').doc();
+
+      String? downloadUrl;
+      if(imageFile != null){
+          String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+          Reference storageRef = _storage.ref().child('location_images').child('${locationId}_$fileName');
+
+          if (kIsWeb) {
+            // Read file bytes out into local runtime memory arrays
+            final Uint8List rawBytes = await imageFile.readAsBytes();
+            UploadTask uploadTask = storageRef.putData(
+              rawBytes,
+              SettableMetadata(contentType: 'image/jpeg'),
+            );
+            TaskSnapshot storageSnapshot = await uploadTask;
+            downloadUrl = await storageSnapshot.ref.getDownloadURL();
+          } else {
+            // Mobile fallback strategy using native File pointers
+            UploadTask uploadTask = storageRef.putFile(File(imageFile.path));
+            TaskSnapshot storageSnapshot = await uploadTask;
+            downloadUrl = await storageSnapshot.ref.getDownloadURL();
+          }
+        }
 
       await _firestore.runTransaction((transaction) async {
         final locationSnapshot = await transaction.get(locationRef);
@@ -115,12 +189,13 @@ class LocationService {
         
         final int newCount = currentCount + 1;
         final double newAvg = currentAvg + ((rating - currentAvg) / newCount);
-        
+
         // Add the new review to 'reviews' subcollection
         transaction.set(reviewRef, {
           'Review': review,
           'Rating': rating,
           'userId': userId,
+          'imageUrl': downloadUrl ?? '',
           'timestamp': FieldValue.serverTimestamp(),
         });
 
@@ -129,6 +204,15 @@ class LocationService {
           'AverageRating': newAvg,
           'ReviewCount': newCount,
         });
+
+        if (downloadUrl != null){
+          transaction.set(imageRef, {
+            'userId': currentUser.uid,
+            'imageUrl': downloadUrl, 
+            'reviewId': reviewRef.id,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
       });
       return null; // Review added and average rating updated successfully
     } catch (e) {

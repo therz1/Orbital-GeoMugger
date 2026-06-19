@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart' ;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
 import '../services/location_service.dart';
 import '../widgets/Reviews/star_rating.dart';
 import '../widgets/Reviews/tag_selection.dart';
@@ -33,6 +36,12 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   Map<String, List<String>> _tagMap = {};
   final List<Map<String, String>> _selectedTags = [];
+
+  final ImagePicker _picker = ImagePicker();
+  
+  XFile? _pickerFile;          // Stores the cross-platform image file reference
+  String? _webImagePreviewUrl;  // Stores the browser blob URL string (Web only)
+  File? _capturedImage;         // Stores the native File pointer (Mobile only)
 
   @override
   void dispose() {
@@ -157,6 +166,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
       review: review,
       rating: _currentRating,
       userId: userId, 
+      imageFile: _pickerFile,
     );
 
     if (!mounted) return;
@@ -199,6 +209,37 @@ class _AddReviewPageState extends State<AddReviewPage> {
     }
 
 
+  Future<void> _takePhoto() async {
+    try {
+      // 📸 This single line works perfectly on Web, Android, and iOS!
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 70, 
+        maxWidth: 1200,
+      );
+
+      if (photo != null) {
+        setState(() {
+          // 1. Save the main cross-platform file container for Firebase
+          _pickerFile = photo; 
+
+          // 2. Setup the visual preview based on where the app is running
+          if (kIsWeb) {
+            // Web browsers look at the XFile path as a temporary blob URL
+            _webImagePreviewUrl = photo.path; 
+          } else {
+            // Mobile devices need a standard File system pointer
+            _capturedImage = File(photo.path);
+          }
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error opening camera: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -218,6 +259,37 @@ class _AddReviewPageState extends State<AddReviewPage> {
                 StarRating(
                   currentRating: _currentRating,
                   onRatingChanged: (rating) => setState(() => _currentRating = rating),
+                // Photo Section
+                GestureDetector(
+                  onTap: _takePhoto,
+                  child: Container(
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color:Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _pickerFile == null
+                        ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.camera_alt, size: 40, color: Colors.grey),
+                              SizedBox(height: 8),
+                              Text('Click to Snap a Photo (Optional)', style: TextStyle(color: Colors.grey)),
+                            ],
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: kIsWeb
+                                ? Image.network(_webImagePreviewUrl!, fit: BoxFit.cover, width: double.infinity)
+                                : Image.file(_capturedImage!, fit: BoxFit.cover, width: double.infinity),
+                          ),
+                  ),
+                ),
+                
+                // rating section
+                const Text(
+                  'Rating', 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
                 ),
                 const Divider(height: 20, thickness: 1),
                 const Text('Features of study spots',
