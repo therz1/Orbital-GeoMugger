@@ -220,6 +220,51 @@ class LocationService {
     }
   }
 
+  Future <void> updateLocationTags({
+    required String locationId,
+    required List<Map<String, String>> userSelectedTags,
+  }) async{
+    if(userSelectedTags.isEmpty) return;
+    final DocumentReference locationRef = _firestore.collection('locations').doc(locationId);
+    return _firestore.runTransaction((transaction) async {
+      DocumentSnapshot snapshot = await transaction.get(locationRef);
+
+      if(!snapshot.exists) {
+        throw Exception("location does not exist");
+      }
+
+      final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>? ?? {};
+      final Map<String, dynamic> allTags = data['allTags'] != null
+        ? Map<String, dynamic>.from(data['allTags'] as Map) : {};
+
+        for(var tags in userSelectedTags) {
+          String tagName = tags['name']!;
+          String tagCategory = tags['category']!;
+
+          if(allTags.containsKey(tagName)) {
+            allTags[tagName]['count'] = (allTags[tagName]['count'] ?? 0) + 1;
+          } else {
+            allTags[tagName] = {'category': tagCategory, 'count': 1};
+          } 
+        }
+
+     final List<Map<String, dynamic>> sortedTagList = allTags.entries.map((entry) {
+        final Map<String, dynamic> tagVal = Map<String, dynamic>.from(entry.value as Map);
+        return {
+          'name': entry.key,
+          'category': tagVal['category'] ?? 'Vibes',
+          'count' : tagVal['count']?? 1 ,
+        };
+      }).toList();
+
+      sortedTagList.sort((a,b) => b['count'].compareTo(a['count']));
+      List<Map<String,dynamic>> updatedTopTags = sortedTagList.take(5)
+            .map((item) => {'name' : item['name'], 'category': item['category']}).toList();
+      transaction.update(locationRef,{'allTags': allTags, 'topTags': updatedTopTags});
+      });
+    }
+
+
 /*
   Future<double> getAverageRating(String locationId) async {
     try {

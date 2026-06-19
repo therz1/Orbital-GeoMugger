@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' ;
 import 'package:image_picker/image_picker.dart';
 import '../services/location_service.dart';
+import '../widgets/Reviews/star_rating.dart';
+import '../widgets/Reviews/tag_selection.dart';
 
 class AddLocationPage extends StatefulWidget {
   //final String locationId;
@@ -76,48 +78,47 @@ class _AddLocationPageState extends State<AddLocationPage> {
     }
   }
 
-  Widget _buildCategoryGroup(String categoryTitle, List<String> tags) {
-    if(tags.isEmpty) return const SizedBox.shrink();
+//   Widget _buildCategoryGroup(String categoryTitle, List<String> tags) {
+//     if(tags.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        Text(
-          categoryTitle,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
-          children: tags.map((tagName) {
-            final bool isSelected = _selectedTags.any((t) => t['name'] ==  tagName);
-            return FilterChip(
-              label: Text(tagName, style: TextStyle(color: isSelected? Colors.white: Colors.black, fontSize: 13),),
-              selected: isSelected,
-              onSelected: (bool selected) {
-                setState(() {
-                if (selected) {
-                  _selectedTags.add({'name': tagName, 'category': categoryTitle});
-                } else{
-                  _selectedTags.removeWhere((t) => t['name'] == tagName);
-                }
-              });
-            },
-            backgroundColor: Colors.grey,
-            selectedColor: _tagColor(categoryTitle),
-            showCheckmark: false,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
-            ),
-          );
-    }).toList(),
-    ),
-  ],
-  );
-}
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         const SizedBox(height: 16),
+//         Text(
+//           categoryTitle,
+//           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+//         ),
+//         const SizedBox(height: 8),
+//         Wrap(
+//           spacing: 8.0,
+//           runSpacing: 8.0,
+//           children: tags.map((tagName) {
+//             final bool isSelected = _selectedTags.any((t) => t['name'] ==  tagName);
+//             return FilterChip(
+//               label: Text(tagName, style: TextStyle(color: isSelected? Colors.white: Colors.black, fontSize: 13),),
+//               selected: isSelected,
+//               onSelected: (bool selected) {
+//                 setState(() {
+//                 if (selected) {
+//                   _selectedTags.add({'name': tagName, 'category': categoryTitle});
+//                 } else{
+//                   _selectedTags.removeWhere((t) => t['name'] == tagName);
+//                 }
+//               });
+//           },
+//           backgroundColor: Colors.grey,
+//           selectedColor: _tagColor(categoryTitle),
+//           showCheckmark: false,
+//           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
+//           side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
+//           ),
+//           );
+//   }).toList(),
+//   ),
+//   ],
+//   );
+// }
           
     Future<void> _takePhoto() async {
     try {
@@ -320,34 +321,30 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 const SizedBox(height: 20),
 
                 // rating section
-                const Text(
-                  'Rating', 
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                StarRating(
+                  currentRating: _currentRating,
+                  onRatingChanged: (rating) => setState(() => _currentRating = rating),
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: List.generate(5, (index) {
-                    final int starValue = index + 1;
-                    return IconButton(
-                      icon: Icon(
-                        Icons.star,
-                        color: starValue <= _currentRating ? Colors.amber : Colors.grey,
-                        size: 32,
-                      ),
-                      onPressed: (){ 
-                        setState(() => _currentRating = starValue);
-                      },
-                    );
-                  }),
-                ),
+                
                 const Divider(height: 20, thickness: 1),
                 const Text('Features of study spots',
                 style: TextStyle(fontSize:18, fontWeight: FontWeight.bold, color: Colors.purple),
                 ),
-                _buildCategoryGroup('Vibes', _tagMap['Vibes'] ?? []),
-                _buildCategoryGroup('Amenities', _tagMap['Amenities'] ?? []),
-                _buildCategoryGroup('Facilities near-by', _tagMap['Facilities near-by'] ?? []),
+                TagSelection(categoryTitle: 'Vibes', tags: _tagMap['Vibes'] ?? [], selectedTags: _selectedTags, 
+                getTagColor: _tagColor,
+                onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
+                onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+
+                TagSelection(categoryTitle: 'Amenities', tags: _tagMap['Amenities'] ?? [], selectedTags: _selectedTags, 
+                getTagColor: _tagColor,
+                onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
+                onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+
+                TagSelection(categoryTitle: 'Facilities near-by', tags: _tagMap['Facilities near-by'] ?? [], selectedTags: _selectedTags, 
+                getTagColor: _tagColor,
+                onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
+                onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+
                 const SizedBox(height: 14),
 
                 TextButton.icon(
@@ -416,52 +413,3 @@ class _AddLocationPageState extends State<AddLocationPage> {
     );
   }
 }
-
-
-
-
-
-  // Future<void> _submitCategorizedTags({
-  //   required String locationId,
-  //   required List<Map<String, String>> userSelectedTags,
-  // }) async {
-  //   // return nothing if no tags selected.
-  //   if(userSelectedTags.isEmpty) return; // No tags to process, skip the function
-  //   DocumentReference locationRef = FirebaseFirestore.instance.collection('locations').doc(locationId);
-  //   return FirebaseFirestore.instance.runTransaction((transaction) async {
-  //     DocumentSnapshot snapshot = await transaction.get(locationRef);
-  //     if(! snapshot.exists) {
-  //       throw Exception("Location record profile not found!");
-  //   }
-  //   final Map<String, dynamic> data = snapshot.data() as Map<String, dynamic> ? ?? {};
-  //   final Map<String, dynamic> allTags = snapshot.get('allTags') != null ?
-  //     Map<String, dynamic>.from(snapshot.get('allTags')) : {} ;
-    
-  //   for (var tag in userSelectedTags) {
-  //     String tagName = tag['name']!;
-  //     String tagCategory = tag['category']!;
-
-  //     if(allTags.containsKey(tagName)) {
-  //       final Map<String, dynamic> currentTagData = Map<String, dynamic>.from(allTags[tagName] as Map);
-  //       final int currentCount = currentTagData['count'] ?? 0.toInt();
-  //       currentTagData['count'] = currentCount + 1;
-  //       allTags[tagName]['count'] = (allTags[tagName]['count'] ?? 0 ) + 1;
-  //     } else {
-  //       allTags[tagName] = {'category': tagCategory, 'count' : 1};
-  //     }
-  //     }
-  //     final List<Map<String, dynamic>> sortedTagList = allTags.entries.map((entry) {
-  //       final Map<String, dynamic> tagVal = Map<String, dynamic>.from(entry.value as Map);
-  //       return {
-  //         'name': entry.key,
-  //         'category': tagVal['category'] ?? 'Vibes',
-  //         'count' : tagVal['count']?? 1 ,
-  //       };
-  //     }).toList();
-
-  //     sortedTagList.sort((a,b) => b['count'].compareTo(a['count']));
-  //     List<Map<String,dynamic>> updatedTopTags = sortedTagList.take(5)
-  //           .map((item) => {'name' : item['name'], 'category': item['category']}).toList();
-  //     transaction.update(locationRef,{'allTags': allTags, 'topTags': updatedTopTags});
-  //     });
-  //   }
