@@ -28,7 +28,7 @@ class LocationService {
       final String locationId = _firestore.collection('locations').doc().id;
       final DocumentReference locationRef = _firestore.collection('locations').doc(locationId);
       final DocumentReference reviewRef = locationRef.collection('reviews').doc();
-      final String reviewId = locationRef.collection('reviews').doc().id;
+      final String reviewId = reviewRef.id;
       final DocumentReference imageRef = locationRef.collection('images').doc();
 
       String? downloadUrl;

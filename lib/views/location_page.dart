@@ -93,9 +93,12 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
 
                 if (snapshot.hasData && snapshot.data!.exists) {
                   final data = snapshot.data!.data() as Map<String, dynamic>?;
+                  
                   final rawRating = data?['averageRating'] ?? 0;
                   avgRating = (rawRating).toDouble();
                   imgUrl = data?['imageUrl'] ?? '';
+                  // 🔍 Add this debug print line:
+                  debugPrint("--- LOCATION IMAGE URL: $imgUrl");
                 }
 
                 return Column(
