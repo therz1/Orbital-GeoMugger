@@ -68,6 +68,7 @@ class LocationService {
       }).toList();
 
       batch.set(locationRef, {
+        'LocationId': locationId,
         'LocationName': locationName,
         'AverageRating': rating.toDouble(), // Initial average rating is the first review's rating
         'ReviewCount': 1, // Initial review count is 1
