@@ -28,6 +28,7 @@ class LocationService {
       final String locationId = _firestore.collection('locations').doc().id;
       final DocumentReference locationRef = _firestore.collection('locations').doc(locationId);
       final DocumentReference reviewRef = locationRef.collection('reviews').doc();
+      final String reviewId = locationRef.collection('reviews').doc().id;
       final DocumentReference imageRef = locationRef.collection('images').doc();
 
       String? downloadUrl;
@@ -80,6 +81,7 @@ class LocationService {
 
       batch.set(reviewRef, {
         'userId': currentUser.uid,
+        'reviewId': reviewId,
         'Rating': rating,
         'Review': review,
         'imageUrl': downloadUrl ?? '',
@@ -154,6 +156,7 @@ class LocationService {
       final locationRef = _firestore.collection('locations').doc(locationId);
       final reviewRef = locationRef.collection('reviews').doc();
       final imageRef = locationRef.collection('images').doc();
+      final String reviewId = locationRef.collection('reviews').doc().id;
 
       String? downloadUrl;
       if(imageFile != null){
@@ -193,6 +196,7 @@ class LocationService {
 
         // Add the new review to 'reviews' subcollection
         transaction.set(reviewRef, {
+          'ReviewId': reviewId,
           'Review': review,
           'Rating': rating,
           'userId': userId,
