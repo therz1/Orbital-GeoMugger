@@ -69,11 +69,11 @@ class LocationService {
       }).toList();
 
       batch.set(locationRef, {
-        'LocationId': locationId,
-        'LocationName': locationName,
-        'AverageRating': rating.toDouble(), // Initial average rating is the first review's rating
-        'ReviewCount': 1, // Initial review count is 1
-        'ImageUrl': downloadUrl ?? '',
+        'locationId': locationId,
+        'locationName': locationName,
+        'averageRating': rating.toDouble(), // Initial average rating is the first review's rating
+        'reviewCount': 1, // Initial review count is 1
+        'imageUrl': downloadUrl ?? '',
         'timestamp': FieldValue.serverTimestamp(),
         'allTags': allTags,
         'topTags': topTags,
@@ -82,8 +82,8 @@ class LocationService {
       batch.set(reviewRef, {
         'userId': currentUser.uid,
         'reviewId': reviewId,
-        'Rating': rating,
-        'Review': review,
+        'rating': rating,
+        'review': review,
         'imageUrl': downloadUrl ?? '',
         'timestamp': FieldValue.serverTimestamp(),
       });
@@ -129,8 +129,8 @@ class LocationService {
         await _firestore.collection('saved_locations').add({
           'userId': currentUser.uid,
           'locationId': locationId,
-          'LocationName': locationName,
-          'Rating': rating,
+          'locationName': locationName,
+          'rating': rating,
           'timestamp': FieldValue.serverTimestamp(),
         });
         return 'Location saved successfully.';
@@ -188,17 +188,17 @@ class LocationService {
         }
 
         // updating average rating with new review
-        final double currentAvg = (locationData['AverageRating'] ?? 0).toDouble();
-        final int currentCount = (locationData['ReviewCount'] ?? 0).toInt();
+        final double currentAvg = (locationData['averageRating'] ?? 0).toDouble();
+        final int currentCount = (locationData['reviewCount'] ?? 0).toInt();
         
         final int newCount = currentCount + 1;
         final double newAvg = currentAvg + ((rating - currentAvg) / newCount);
 
         // Add the new review to 'reviews' subcollection
         transaction.set(reviewRef, {
-          'ReviewId': reviewId,
-          'Review': review,
-          'Rating': rating,
+          'reviewId': reviewId,
+          'review': review,
+          'rating': rating,
           'userId': userId,
           'imageUrl': downloadUrl ?? '',
           'timestamp': FieldValue.serverTimestamp(),
@@ -206,8 +206,8 @@ class LocationService {
 
        // update the average rating and review count in the main location document
         transaction.update(locationRef, {
-          'AverageRating': newAvg,
-          'ReviewCount': newCount,
+          'averageRating': newAvg,
+          'reviewCount': newCount,
         });
 
         if (downloadUrl != null){

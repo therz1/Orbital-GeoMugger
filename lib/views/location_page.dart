@@ -93,9 +93,9 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
 
                 if (snapshot.hasData && snapshot.data!.exists) {
                   final data = snapshot.data!.data() as Map<String, dynamic>?;
-                  final rawRating = data?['AverageRating'] ?? 0;
+                  final rawRating = data?['averageRating'] ?? 0;
                   avgRating = (rawRating).toDouble();
-                  imgUrl = data?['ImageUrl'] ?? '';
+                  imgUrl = data?['imageUrl'] ?? '';
                 }
 
                 return Column(
@@ -241,7 +241,7 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                   
                               Row (
                                 children: [
-                                  StarRatingWidget(rating: data['Rating']),
+                                  StarRatingWidget(rating: data['rating']),
                                   const Spacer(),
                                   Text(
                                     data['timestamp'] != null 
@@ -253,7 +253,7 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                data['Review'] ?? 'No review available',
+                                data['review'] ?? 'No review available',
                               ), 
                               const SizedBox(height: 20),
                             ]

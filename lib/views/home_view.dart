@@ -151,7 +151,7 @@ class _HomeViewState extends State<HomeView> {
                   final documents = locations.where((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     if (data['timestamp'] == null) return false; // Skip documents without timestamp
-                    final String locationName = (data['LocationName'] ?? '').toString().toLowerCase();
+                    final String locationName = (data['locationName'] ?? '').toString().toLowerCase();
                     
                     final bool matchesText = locationName.contains(_searchQuery);
                     bool matchesTags = true; 
@@ -187,12 +187,12 @@ class _HomeViewState extends State<HomeView> {
                     
                       final Map<String, dynamic> data = documents[index].data() as Map<String, dynamic>;
                       
-                      final String locationName = data['LocationName'] ?? 'Unknown Location';
-                      final String review = data['Review'] ?? 'No review provided.';
-                      final int rating = data['Rating'] ?? 0;
-                      final num rawRating = data['AverageRating'] ?? 0;
+                      final String locationName = data['locationName'] ?? 'Unknown Location';
+                      final String review = data['review'] ?? 'No review provided.';
+                      final int rating = data['rating'] ?? 0;
+                      final num rawRating = data['averageRating'] ?? 0;
                       final double avgRating = rawRating.toDouble();
-                      final String imgUrl = data['ImageUrl'] ?? '';
+                      final String imgUrl = data['imageUrl'] ?? '';
 
                       final List<dynamic> topTags = data['topTags'] ?? [];
 
