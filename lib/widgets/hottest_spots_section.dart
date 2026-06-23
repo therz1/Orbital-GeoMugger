@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_mugger/services/hottest_spots_service.dart';
+import 'package:geo_mugger/views/location_page.dart';
 
 class HottestSpotsSection extends StatefulWidget {
   const HottestSpotsSection({super.key});
@@ -69,45 +70,65 @@ class _HottestSpotsSectionState extends State<HottestSpotsSection> {
                       final String name = docData['LocationName'] ?? 'Unknown Location';
                       final String imageUrl = docData['ImageUrl'] ?? '';
                       final double rating = (docData['AverageRating'] ?? 0.0).toDouble();
+                      final docSnapshot = sortedDocs[index];
+                      final String docId = docSnapshot.id;
+                      final String review = docData['Review'] ?? "see user reviews";
 
-                      return Container(
-                        width: 140,
-                        margin: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey,
-                                  borderRadius: BorderRadius.circular(12),
-                                  image: imageUrl.isNotEmpty
-                                      ? DecorationImage(
-                                          image: NetworkImage(imageUrl),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null,
-                                ),
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap:() {
+                          //reusing logic from home_view.dart
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LocationDetailPage(
+                                locationID: docId,
+                                locationName: name,
+                                review: review,
+                                rating: rating.toInt(),
                               ),
-                            ), //
-                            const SizedBox(height: 6),
-                            Text(
-                              name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            Row(
-                              children: [
-                                const Icon(Icons.star, size: 15, color: Colors.amber),
-                                const SizedBox(width: 2),
-                                Text(
-                                  rating.toStringAsFixed(1),
-                                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          );
+                        },
+                        child: Container(
+                          width: 140,
+                          margin: const EdgeInsets.symmetric(horizontal: 6.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey,
+                                    borderRadius: BorderRadius.circular(12),
+                                    image: imageUrl.isNotEmpty
+                                        ? DecorationImage(
+                                            image: NetworkImage(imageUrl),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ],
+                              ), //
+                              const SizedBox(height: 6),
+                              Text(
+                                name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Row(
+                                children: [
+                                  const Icon(Icons.star, size: 15, color: Colors.amber),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    rating.toStringAsFixed(1),
+                                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
