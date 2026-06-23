@@ -109,6 +109,8 @@ class LocationService {
     required String locationId,
     required String locationName,
     required int rating,
+    required String imgUrl,
+    required double avgRating,
   }) async {
     try {
       final User? currentUser = _auth.currentUser;
@@ -131,6 +133,8 @@ class LocationService {
           'locationId': locationId,
           'locationName': locationName,
           'rating': rating,
+          'averageRating': avgRating,
+          'imageUrl': imgUrl,
           'timestamp': FieldValue.serverTimestamp(),
         });
         return 'Location saved successfully.';

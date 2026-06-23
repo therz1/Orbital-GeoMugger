@@ -212,6 +212,8 @@ class _HomeViewState extends State<HomeView> {
                                   locationName: locationName,
                                   review: review,
                                   rating: rating,
+                                  imgUrl: imgUrl,
+                                  avgRating: avgRating,
                                 ),
                               ),
                             );
