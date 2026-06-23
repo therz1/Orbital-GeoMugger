@@ -43,9 +43,9 @@ class SavedView extends StatelessWidget {
           itemBuilder: (context, index) {
             final Map<String, dynamic> data = savedDocs[index].data() as Map<String, dynamic>;
 
-            final String locationName = data['LocationName'] ?? 'Unknown Location';
-            final String review = data['Review'] ?? '';
-            final int rating = data['Rating'] ?? 0;
+            final String locationName = data['locationName'] ?? 'Unknown Location';
+            final String review = data['review'] ?? '';
+            final int rating = data['rating'] ?? 0;
             final String realLocationId = data['locationId'] ?? '';
 
             return Card(
