@@ -128,11 +128,7 @@ class _HomeViewState extends State<HomeView> {
                 }).toList(),
               ),
             ),
-            const SizedBox(height: 8),
 
-            const HottestSpotsSection(),
-            const SizedBox(height: 12),
-                  
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: LocationService().getLocations(),
@@ -183,14 +179,34 @@ class _HomeViewState extends State<HomeView> {
                     );
                   }
                   return ListView.builder(
-                    itemCount: documents.length,
+                    itemCount: documents.isEmpty ? 1: documents.length + 1,
                     padding: const EdgeInsets.all(12),
                     itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return Column(
+                          children: [
+                            HottestSpotsSection(),
+                            SizedBox(height: 12),
+                            Divider(thickness: 1),
+                            SizedBox(height: 8),
+                          ],
+                        );
+                      }
+
+                      if (documents.isEmpty) {
+                       return Center(
+                         child: Padding(
+                           padding: const EdgeInsets.all(20.0),
+                           child: Text("no matches found...", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 16)
+                           ),
+                         ),
+                       );
+                      }
                       // document snapshot information:
-                      final docSnapshot = documents[index];
+                      final docSnapshot = documents[index - 1];
                       final String docId = docSnapshot.id; // Unique document ID for navigation
                     
-                      final Map<String, dynamic> data = documents[index].data() as Map<String, dynamic>;
+                      final Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
                       
                       final String locationName = data['LocationName'] ?? 'Unknown Location';
                       final String review = data['Review'] ?? 'No review provided.';
