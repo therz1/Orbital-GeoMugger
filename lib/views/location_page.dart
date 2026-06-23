@@ -1,3 +1,5 @@
+//import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import '../services/location_service.dart';
 import '../widgets/star_display.dart';
@@ -12,6 +14,8 @@ class LocationDetailPage extends StatefulWidget {
   final String locationName;
   final String review;
   final int rating;
+  final String imgUrl;
+  final double avgRating;
 
   // The constructor requires the data fields passed from the clicked card
   const LocationDetailPage({
@@ -20,6 +24,8 @@ class LocationDetailPage extends StatefulWidget {
     required this.locationName,
     required this.review,
     required this.rating,
+    required this.imgUrl,
+    required this.avgRating,
   });
 
   @override
@@ -62,6 +68,8 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                     locationId: widget.locationID,
                     locationName: widget.locationName,
                     rating: widget.rating,
+                    imgUrl: widget.imgUrl,
+                    avgRating: widget.avgRating,
                   );
                   // Implement bookmark functionality here
                   if (context.mounted && result != null) {

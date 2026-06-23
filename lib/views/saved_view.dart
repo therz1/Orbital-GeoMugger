@@ -1,19 +1,78 @@
 import 'package:flutter/material.dart';
-import '../services/location_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geo_mugger/widgets/tag_filter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'location_page.dart';
+import '../widgets/main_star_display.dart';
+import '../services/location_service.dart';
 
-class SavedView extends StatelessWidget {
+
+class SavedView extends StatefulWidget {
   const SavedView({super.key});
+  @override
+  State<SavedView> createState() => _SavedViewState();
+}
+
+class _SavedViewState extends State<SavedView> {   
+  Map <String, List<String>> _tagMap = {};
+  final List<String> _selectedTags = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTags();
+  }
+  
+  Color _tagColor(String cateogry) {
+    switch(cateogry) {
+      case 'Vibes':
+        return const Color.fromARGB(255, 2, 224, 254);
+      case 'Amenities':
+        return const Color.fromARGB(255, 255, 153, 0);
+      case 'Facilities near-by':
+        return const Color.fromARGB(255, 112, 187, 69);
+      default:
+        return Colors.transparent;
+    }
+  }
+
+  Future<void> _fetchTags() async {
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('metadata').doc('tags_list').get();
+      if(doc.exists) {
+        setState(() {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          _tagMap = data.map((key, value) => MapEntry(key, List<String>.from(value),));
+        });
+      }
+    } catch(error) {
+      debugPrint("Error fetching tag Map : $error");
+    }
+  }
+
+
+  Widget _buildFallbackIcon() {
+    return Container(
+      color: Colors.orange[50],
+      child: const Icon(
+        Icons.location_on, 
+        color: Colors.orange, 
+        size: 28
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: LocationService().getSavedLocations(), 
       builder: (context, snapshot) {
+        // 1. Waiting for data
         if(snapshot.connectionState == ConnectionState.waiting){
           return const Center(child: CircularProgressIndicator(color:Colors.orange));
         }
+        
+        // 2. Error occured
         if (snapshot.hasError){
           return Center(
             child: Padding(
@@ -23,6 +82,7 @@ class SavedView extends StatelessWidget {
           );
         }
 
+        // 3. Data loaded but empty
         final savedDocs = snapshot.data?.docs ?? [];
         if (savedDocs.isEmpty) {
           return const Center(
@@ -47,6 +107,11 @@ class SavedView extends StatelessWidget {
             final String review = data['review'] ?? '';
             final int rating = data['rating'] ?? 0;
             final String realLocationId = data['locationId'] ?? '';
+            final num rawRating = data['averageRating'] ?? 0;
+            final double avgRating = rawRating.toDouble();
+            final String imgUrl = data['imageUrl'] ?? '';
+
+            final List<dynamic> topTags = data['topTags'] ?? [];
 
             return Card(
               elevation: 3,
@@ -63,19 +128,77 @@ class SavedView extends StatelessWidget {
                         locationName: locationName,
                         review: review,
                         rating: rating,
+                        imgUrl: imgUrl,
+                        avgRating: avgRating,
                       ),
                     ),
                   );
                 },
                 child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.brown,
-                    child: const Icon(Icons.location_on, color: Colors.orange),
+                  isThreeLine: topTags.isNotEmpty,
+                  leading: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: imgUrl.isNotEmpty ? CachedNetworkImage(
+                          imageUrl: imgUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[100],
+                            child: const Center(
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.black
+                                ),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => _buildFallbackIcon(),
+                        )
+                        : _buildFallbackIcon(),
+                      ),
                   ),
-                  title: Text(locationName),
-                  subtitle: Text('Rating: ${"⭐" * rating}'),
+                    title: Text(locationName),      
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: MainStarRatingWidget(rating: avgRating),
+                            ),
+                            if (topTags.isNotEmpty) 
+                              Wrap(
+                                spacing: 4.0,
+                                runSpacing: 4.0,
+                                children: topTags.take(5).map((tagItem) {
+                                  final Map<String, dynamic> tag = Map<String, dynamic>.from(tagItem as Map);
+                                  final String name = tag['name'] ?? '';
+                                  final String category = tag['category'] ?? '';
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: _tagColor(category),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      name,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
                 ),
               ),
+            ),
             );
           },
         );
