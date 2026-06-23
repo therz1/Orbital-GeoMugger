@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geo_mugger/widgets/hottest_spots_section.dart';
 import 'package:geo_mugger/widgets/tag_filter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/location_service.dart';
@@ -127,6 +128,10 @@ class _HomeViewState extends State<HomeView> {
                 }).toList(),
               ),
             ),
+            const SizedBox(height: 8),
+
+            const HottestSpotsSection(),
+            const SizedBox(height: 12),
                   
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
