@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geo_mugger/widgets/hottest_spots_section.dart';
 import 'package:geo_mugger/widgets/tag_filter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/location_service.dart';
@@ -127,7 +128,7 @@ class _HomeViewState extends State<HomeView> {
                 }).toList(),
               ),
             ),
-                  
+
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: LocationService().getLocations(),
@@ -178,14 +179,34 @@ class _HomeViewState extends State<HomeView> {
                     );
                   }
                   return ListView.builder(
-                    itemCount: documents.length,
+                    itemCount: documents.isEmpty ? 1: documents.length + 1,
                     padding: const EdgeInsets.all(12),
                     itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return Column(
+                          children: [
+                            HottestSpotsSection(),
+                            SizedBox(height: 12),
+                            Divider(thickness: 1),
+                            SizedBox(height: 8),
+                          ],
+                        );
+                      }
+
+                      if (documents.isEmpty) {
+                       return Center(
+                         child: Padding(
+                           padding: const EdgeInsets.all(20.0),
+                           child: Text("no matches found...", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 16)
+                           ),
+                         ),
+                       );
+                      }
                       // document snapshot information:
-                      final docSnapshot = documents[index];
+                      final docSnapshot = documents[index - 1];
                       final String docId = docSnapshot.id; // Unique document ID for navigation
                     
-                      final Map<String, dynamic> data = documents[index].data() as Map<String, dynamic>;
+                      final Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
                       
                       final String locationName = data['locationName'] ?? 'Unknown Location';
                       final String review = data['review'] ?? 'No review provided.';
