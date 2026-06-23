@@ -67,12 +67,13 @@ class _HottestSpotsSectionState extends State<HottestSpotsSection> {
                     itemCount: sortedDocs.length,
                     itemBuilder: (context, index) {
                       final docData = sortedDocs[index].data() as Map<String, dynamic>;
-                      final String name = docData['LocationName'] ?? 'Unknown Location';
-                      final String imageUrl = docData['ImageUrl'] ?? '';
-                      final double rating = (docData['AverageRating'] ?? 0.0).toDouble();
+                      final String name = docData['locationName'] ?? 'Unknown Location';
+                      final String imageUrl = docData['imageUrl'] ?? '';
+                      final double rating = (docData['averageRating'] ?? 0.0).toDouble();
                       final docSnapshot = sortedDocs[index];
                       final String docId = docSnapshot.id;
-                      final String review = docData['Review'] ?? "see user reviews";
+                      final String review = docData['review'] ?? "see user reviews";
+                      final String imgUrl = docData['imageUrl'] ?? '';
 
                       return InkWell(
                         borderRadius: BorderRadius.circular(12),
@@ -86,6 +87,8 @@ class _HottestSpotsSectionState extends State<HottestSpotsSection> {
                                 locationName: name,
                                 review: review,
                                 rating: rating.toInt(),
+                                imgUrl: imgUrl,
+                                avgRating: rating,
                               ),
                             ),
                           );

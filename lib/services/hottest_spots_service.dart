@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class HottestSpotsService {
   // note change apiUrl to ur own ip address if you are doing a local host!
-  final String _apiUrl = 'http://10.130.93.72:8000/hottest-spots?n=5';
+  final String _apiUrl = 'http://192.168.18.13:8000/hottest-spots?n=5';
   Future<List<String>> fetchHottestSpotIds() async {
     try {
       final response = await http.get(Uri.parse(_apiUrl));
