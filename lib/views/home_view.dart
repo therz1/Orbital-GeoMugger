@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geo_mugger/widgets/hottest_spots_section.dart';
+import 'package:geo_mugger/widgets/Recommendation/hottest_spots_section.dart';
+import 'package:geo_mugger/widgets/Recommendation/recommended_spot.dart';
 import 'package:geo_mugger/widgets/tag_filter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../services/location_service.dart';
@@ -110,6 +111,7 @@ class _HomeViewState extends State<HomeView> {
                 ],
               ),
             ),
+
             if (_selectedTags.isNotEmpty) 
             Container(
               height: 40,
@@ -130,7 +132,25 @@ class _HomeViewState extends State<HomeView> {
             ),
 
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
+              child: _searchQuery.isEmpty && _selectedTags.isEmpty
+              ? ListView(
+                padding: EdgeInsets.all(12),
+                children: [
+                  HottestSpotsSection(),
+                  SizedBox(height: 12),
+                  Divider(thickness: 1),
+                  SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("Recommended for you",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  RecommendedSpot(),
+                ],
+              )
+              : StreamBuilder<QuerySnapshot>(
                 stream: LocationService().getLocations(),
                 builder: (context, snapshot) {
                   // 1: Waiting for data
@@ -179,31 +199,12 @@ class _HomeViewState extends State<HomeView> {
                     );
                   }
                   return ListView.builder(
-                    itemCount: documents.isEmpty ? 1: documents.length + 1,
+                    itemCount: documents.length ,
                     padding: const EdgeInsets.all(12),
                     itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return Column(
-                          children: [
-                            HottestSpotsSection(),
-                            SizedBox(height: 12),
-                            Divider(thickness: 1),
-                            SizedBox(height: 8),
-                          ],
-                        );
-                      }
-
-                      if (documents.isEmpty) {
-                       return Center(
-                         child: Padding(
-                           padding: const EdgeInsets.all(20.0),
-                           child: Text("no matches found...", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 16)
-                           ),
-                         ),
-                       );
-                      }
-                      // document snapshot information:
-                      final docSnapshot = documents[index - 1];
+                
+//logic reused in RecommendedSection
+                      final docSnapshot = documents[index];
                       final String docId = docSnapshot.id; // Unique document ID for navigation
                     
                       final Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;

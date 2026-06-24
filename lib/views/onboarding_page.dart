@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geo_mugger/views/home_screen.dart';
 import 'package:geo_mugger/widgets/Reviews/tag_selection.dart';
-import 'home_view.dart';
+
 
 //stateful widget because we are keeping track of the tag selection
 class OnboardingPage extends StatefulWidget {
@@ -56,7 +57,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       }, SetOptions(merge: true));
     if (mounted){
       Navigator.pushReplacement(context,
-      MaterialPageRoute(builder: (context) => HomeView()),
+      MaterialPageRoute(builder: (context) => HomePage()),
       );
     }
   } catch (tagError) {
@@ -130,7 +131,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     ),
                     onPressed: _selectedTags.isEmpty ? null
                     : _savePreferenceAndNavigate, 
-                    child: Text("Get Recommendations", style: TextStyle(fontSize:16, fontWeight:FontWeight.bold),
+                    child: Text("Submit", style: TextStyle(fontSize:16, fontWeight:FontWeight.bold),
                     ),
                     ),
                   ),
