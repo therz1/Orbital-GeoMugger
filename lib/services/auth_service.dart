@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:flutter/material.dart';
 
@@ -9,9 +10,19 @@ class AuthService {
   }) async {
     final cleanEmail = email.trim();
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: cleanEmail, password: password
       );
+      final User? user = userCredential.user;
+// if user succefully registered, log user info into database
+      if(user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'email': cleanEmail,
+          'hasCompletedOnboarding': false,
+          'preferredTags': [],
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
       return null; // Successful signup
 
     } on FirebaseAuthException catch(e) {

@@ -1,15 +1,18 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class HottestSpotsService {
-  // note change apiUrl to ur own ip address if you are doing a local host!
-  final String _apiUrl = 'http://192.168.18.13:8000/hottest-spots?n=5';
+
+  final DocumentReference _docRef = FirebaseFirestore.instance
+    .collection('metadata').doc('hottest_spots');
+
   Future<List<String>> fetchHottestSpotIds() async {
     try {
-      final response = await http.get(Uri.parse(_apiUrl));
-      if(response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        List<dynamic> ids = data["hottest_spot_ids"];
+      final response = await _docRef.get();
+
+      if (response.exists && response.data() != null){
+        final Map<String, dynamic> data = response.data() as Map<String, dynamic>;
+        List<dynamic> ids = data["hottest_spot_ids"] ?? [];
         print("debug: $ids");
         return List<String>.from(ids);
       }
