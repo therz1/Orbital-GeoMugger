@@ -14,7 +14,7 @@ class AuthService {
         email: cleanEmail, password: password
       );
       final User? user = userCredential.user;
-// 
+// if user succefully registered, log user info into database
       if(user != null) {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'email': cleanEmail,
