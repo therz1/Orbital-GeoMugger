@@ -14,7 +14,11 @@ class OnboardingPage extends StatefulWidget {
 
 class _OnboardingPageState extends State<OnboardingPage> {
   //basically the same as tag_selection logic in add_review and add_location
-  final Map<String, List<String>> _tagMap = {};
+  final Map<String, List<String>> _tagMap = {
+    'Vibes': ['Bright', 'Cozy', 'Chill', 'Dark Academia', 'Library', 'Quiet', 'White noise'],
+    'Amenities': ['Air con', 'Comfortable seats', 'Discussion Area', 'Lamp', 'Multiple seats', 'Power Outlet', 'Printer', 'Standing desk' 'Wifi'],
+    'Facilities near-by': ['Bus stop', 'Bookshop', 'Car park', 'Convenience store', 'Food Court', 'Garden', 'Public toilet', 'Mall', 'MRT']
+  }; //from main.dart
 
   final List<Map<String, String>> _selectedTags = [];
   bool _isLoading = false;
