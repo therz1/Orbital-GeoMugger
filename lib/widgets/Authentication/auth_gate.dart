@@ -15,39 +15,48 @@ class AuthGate extends StatelessWidget{
     return StreamBuilder<User?>(
       //check if user is logged in
       stream: FirebaseAuth.instance.authStateChanges(),
+      
       builder: (context, authSnapshot) {
         //when loading credential so it does not just freeze.
+        
         if (authSnapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
-//case 1: when no user log in
+        //case 1: when no user log in
         if(!authSnapshot.hasData || authSnapshot.data == null) {
+          //print("DEBUG: Redirecting to LoginScreen because user is null.");
           return LoginScreen();
         }
         final User user = authSnapshot.data!;
 
-//case 2: user logged in
+        //case 2: user logged in
         return FutureBuilder<DocumentSnapshot> (
           //gather user info
           future: FirebaseFirestore.instance.collection('user').doc(user.uid).get(),
           builder: (context, firestoreSnapshot) {
+            // waiting
             if(firestoreSnapshot.connectionState == ConnectionState.waiting) {
               return Scaffold(body: Center(child: CircularProgressIndicator()));
             }
-//if user has no completed onboarding set up
-            if(!firestoreSnapshot.hasData || !firestoreSnapshot.data!.exists) {
-              return OnboardingPage();
+
+            final snapshotData = firestoreSnapshot.data;
+            //print("DEBUG: Document exists: ${snapshotData?.exists}");
+            //print("DEBUG: Full Data Map: ${snapshotData?.data()}");
+
+            if (snapshotData != null && snapshotData.exists){
+              final dataMap = snapshotData.data() as Map<String, dynamic> ?;
+              // final data = firestoreSnapshot.data!.data() as Map<String, dynamic> ?;
+              final bool hasCompletedOnboarding = dataMap?['hasCompletedOnboarding'] == true;
+              
+              //final check if user completed onboarding
+              if(hasCompletedOnboarding) {
+                return HomePage();
+              }
             }
-            final data = firestoreSnapshot.data!.data() as Map<String, dynamic> ?;
-            final bool hasCompletedOnboarding = data?['hasCompletedOnboarding'] ?? false;
-//final check if user completed onboarding
-            if(hasCompletedOnboarding) {
-              return HomePage();
-            } else {
-              return OnboardingPage();
-            }
-            },
+            
+            return OnboardingPage();
+          }
         );
       },
     );
