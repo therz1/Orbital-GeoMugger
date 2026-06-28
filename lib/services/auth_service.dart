@@ -4,17 +4,37 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
   // create user with email and password
+
   Future<String?> signup({
     required String email,
     required String password
   }) async {
     final cleanEmail = email.trim();
+    // 1. create user
     try {
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: cleanEmail, password: password
       );
+
+      // 2. defensive firestore write
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+          'email': cleanEmail,
+          'hasCompletedOnboarding': false,
+          'preferredTags': [],
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        return null;
+      } catch (firestoreError){
+        //await userCredential.user?.delete();
+        return "Registration failed at data sync. Please try again.";
+      }
+    } on FirebaseAuthException catch (e) {
+      return e.message;
+    }
+    /*
       final User? user = userCredential.user;
-// if user succefully registered, log user info into database
+      // if user succefully registered, log user info into database
       if(user != null) {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'email': cleanEmail,
@@ -39,6 +59,7 @@ class AuthService {
     } catch (e) {
       return 'An error occurred. Please try again.';
     }
+    */
   }
 
 

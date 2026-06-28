@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (mounted) setState(() => _isLoading = false);
     if (errorResult != null) {
       _showSnackbar(errorResult);
-    }
+    } 
   }
 
   void _handleRegister() async {
@@ -53,7 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
     );
-    if (mounted) setState(() => _isLoading = false);
+    if (!mounted) return;
+    //if (mounted) setState(() => _isLoading = false);
     if (errorResult != null) {
       _showSnackbar(errorResult);
     } 
