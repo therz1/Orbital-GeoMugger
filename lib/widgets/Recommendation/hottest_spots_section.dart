@@ -74,6 +74,7 @@ class _HottestSpotsSectionState extends State<HottestSpotsSection> {
                       final String docId = docSnapshot.id;
                       final String review = docData['review'] ?? "see user reviews";
                       final String imgUrl = docData['imageUrl'] ?? '';
+                      final List<dynamic> topTags = docData['topTags'] ?? [];
 
                       return InkWell(
                         borderRadius: BorderRadius.circular(12),
@@ -89,6 +90,7 @@ class _HottestSpotsSectionState extends State<HottestSpotsSection> {
                                 rating: rating.toInt(),
                                 imgUrl: imgUrl,
                                 avgRating: rating,
+                                topTags: topTags,
                               ),
                             ),
                           );

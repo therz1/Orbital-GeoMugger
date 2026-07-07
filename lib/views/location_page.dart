@@ -16,6 +16,7 @@ class LocationDetailPage extends StatefulWidget {
   final int rating;
   final String imgUrl;
   final double avgRating;
+  final List<dynamic> topTags; // New field for top tags
 
   // The constructor requires the data fields passed from the clicked card
   const LocationDetailPage({
@@ -26,6 +27,7 @@ class LocationDetailPage extends StatefulWidget {
     required this.rating,
     required this.imgUrl,
     required this.avgRating,
+    required this.topTags, // Include topTags in the constructor
   });
 
   @override
@@ -37,6 +39,18 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
   Widget build(BuildContext context) {
     //final String starString = '⭐' * widget.rating; // Convert rating to star string
     final String currentUser = FirebaseAuth.instance.currentUser?.uid ?? ''; // Get current user ID for bookmark check
+    Color tagColor(String category) {
+    switch(category) {
+      case 'Vibes':
+        return const Color.fromARGB(255, 2, 224, 254);
+      case 'Amenities':
+        return const Color.fromARGB(255, 255, 153, 0);
+      case 'Facilities near-by':
+        return const Color.fromARGB(255, 112, 187, 69);
+      default:
+        return Colors.transparent;
+    }
+  }
 
     return Scaffold(
       appBar: AppBar(
@@ -70,6 +84,7 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                     rating: widget.rating,
                     imgUrl: widget.imgUrl,
                     avgRating: widget.avgRating,
+                    topTags: widget.topTags,
                   );
                   // Implement bookmark functionality here
                   if (context.mounted && result != null) {
@@ -149,6 +164,54 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
+
+                    // Tags Display
+                    StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('locations')
+                          .doc(widget.locationID)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data!.exists) {
+                          final data = snapshot.data!.data() as Map<String, dynamic>?;
+                          final List<dynamic> topTags = data?['topTags'] ?? [];
+
+                          if (topTags.isNotEmpty) {
+                            return Wrap(
+                              spacing: 4.0,
+                              runSpacing: 4.0,
+                              children: topTags.take(5).map((tagItem) {
+                                final Map<String, dynamic> tag = Map<String, dynamic>.from(tagItem as Map);
+                                final String name = tag['name'] ?? '';
+                                final String category = tag['category'] ?? '';
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: tagColor(category),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    name,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          } else {
+                            return const SizedBox.shrink(); // No tags to display
+                          }
+                        } else {
+                          return const SizedBox.shrink(); // No data yet
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Rating Display
                     Row (
                       children: [
                         const Text('Rating: ', style: TextStyle(fontSize: 18)),
