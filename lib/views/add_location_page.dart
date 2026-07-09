@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' ;
+import 'package:geo_mugger/widgets/maplocation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/location_service.dart';
 import '../widgets/Reviews/star_rating.dart';
 import '../widgets/Reviews/tag_selection.dart';
@@ -36,8 +38,11 @@ class _AddLocationPageState extends State<AddLocationPage> {
   Map<String, List<String>> _tagMap = {};
   final List<Map<String, String>> _selectedTags = [];
 
-    Color _tagColor(String cateogry) {
-    switch(cateogry) {
+  LatLng? _pickedLocation;
+  Set<Marker> _markers = {};
+
+  Color _tagColor(String category) {
+    switch(category) {
       case 'Vibes':
         return const Color.fromARGB(255, 2, 224, 254);
       case 'Amenities':
@@ -77,50 +82,8 @@ class _AddLocationPageState extends State<AddLocationPage> {
       setState(() => _isLoadingTags = false);
     }
   }
-
-//   Widget _buildCategoryGroup(String categoryTitle, List<String> tags) {
-//     if(tags.isEmpty) return const SizedBox.shrink();
-
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         const SizedBox(height: 16),
-//         Text(
-//           categoryTitle,
-//           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-//         ),
-//         const SizedBox(height: 8),
-//         Wrap(
-//           spacing: 8.0,
-//           runSpacing: 8.0,
-//           children: tags.map((tagName) {
-//             final bool isSelected = _selectedTags.any((t) => t['name'] ==  tagName);
-//             return FilterChip(
-//               label: Text(tagName, style: TextStyle(color: isSelected? Colors.white: Colors.black, fontSize: 13),),
-//               selected: isSelected,
-//               onSelected: (bool selected) {
-//                 setState(() {
-//                 if (selected) {
-//                   _selectedTags.add({'name': tagName, 'category': categoryTitle});
-//                 } else{
-//                   _selectedTags.removeWhere((t) => t['name'] == tagName);
-//                 }
-//               });
-//           },
-//           backgroundColor: Colors.grey,
-//           selectedColor: _tagColor(categoryTitle),
-//           showCheckmark: false,
-//           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
-//           side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
-//           ),
-//           );
-//   }).toList(),
-//   ),
-//   ],
-//   );
-// }
           
-    Future<void> _takePhoto() async {
+  Future<void> _takePhoto() async {
     try {
       // 📸 This single line works perfectly on Web, Android, and iOS!
       final XFile? photo = await _picker.pickImage(
@@ -154,10 +117,20 @@ class _AddLocationPageState extends State<AddLocationPage> {
   void _submitLocation() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_pickedLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a location on the map'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
 
     final String locationName = _locationNameController.text.trim();
     final String review = _reviewController.text.trim();
+
+    final geoLocation = GeoPoint(_pickedLocation!.latitude, _pickedLocation!.longitude);
+
 
     final String? errorResult = await LocationService().addLocation(
       //locationId: widget.locationId,
@@ -166,6 +139,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
       rating: _currentRating,
       userSelectedTags: _selectedTags,
       imageFile: _pickerFile,
+      geoLocation: geoLocation,
     );
 
     if (!mounted) return;
@@ -355,6 +329,34 @@ class _AddLocationPageState extends State<AddLocationPage> {
                   ),
     
                 const SizedBox(height: 20),
+
+
+                // Insert Location here:
+                const Text(
+                  'Location on Map', 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                ),
+                const SizedBox(height: 10),
+                
+                ListTile(
+                  title: Text(_pickedLocation == null ? 'No location selected' : 'Selected Location: (${_pickedLocation!.latitude.toStringAsFixed(4)}, ${_pickedLocation!.longitude.toStringAsFixed(4)})'),
+                  subtitle: _pickedLocation == null ? 
+                    null : const Text('Tap on the map to change location'),
+                  trailing: Icon(Icons.map),
+                  onTap: () async {
+                    final LatLng? result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MapSelectorPage()),
+                    );
+
+                    if (result != null){
+                      setState(() {
+                        _pickedLocation = result;
+                      });
+                    }
+                  }
+                ),
+                const SizedBox(height: 10),
 
                 // review section
                 const Text(
