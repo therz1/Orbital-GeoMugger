@@ -36,8 +36,8 @@ class _AddLocationPageState extends State<AddLocationPage> {
   Map<String, List<String>> _tagMap = {};
   final List<Map<String, String>> _selectedTags = [];
 
-    Color _tagColor(String cateogry) {
-    switch(cateogry) {
+  Color _tagColor(String category) {
+    switch(category) {
       case 'Vibes':
         return const Color.fromARGB(255, 2, 224, 254);
       case 'Amenities':

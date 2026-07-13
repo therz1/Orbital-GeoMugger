@@ -110,8 +110,10 @@ class _SavedViewState extends State<SavedView> {
             final num rawRating = data['averageRating'] ?? 0;
             final double avgRating = rawRating.toDouble();
             final String imgUrl = data['imageUrl'] ?? '';
-
+            
+            // Directly extract tags from the existing 'data' snapshot
             final List<dynamic> topTags = data['topTags'] ?? [];
+
 
             return Card(
               elevation: 3,
@@ -130,6 +132,7 @@ class _SavedViewState extends State<SavedView> {
                         rating: rating,
                         imgUrl: imgUrl,
                         avgRating: avgRating,
+                        topTags: topTags,
                       ),
                     ),
                   );
@@ -162,6 +165,9 @@ class _SavedViewState extends State<SavedView> {
                         : _buildFallbackIcon(),
                       ),
                   ),
+                  
+                  
+                  // Thumbnail 
                     title: Text(locationName),      
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
