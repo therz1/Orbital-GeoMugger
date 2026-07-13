@@ -2,12 +2,14 @@ import 'package:flutter/material.dart' ;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice_ex/places.dart';
+import 'package:geolocator/geolocator.dart';
 import 'placeSearchDelegate.dart';
 
 
 class MapSelectorPage extends StatefulWidget {
+  const MapSelectorPage({super.key});
   @override
-  _MapSelectorPageState createState() => _MapSelectorPageState();
+  State<MapSelectorPage> createState() => _MapSelectorPageState();
 }
 
 class _MapSelectorPageState extends State<MapSelectorPage> {
@@ -15,7 +17,87 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
 
   GoogleMapController? _mapController;
   LatLng? _pickedLocation;
+  LatLng? _currentLocation;
+
   Set<Marker> _markers = {};
+  BitmapDescriptor? _currentLocationIcon;
+  bool _hasPermission = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomMarker();
+    _checkPermission();
+
+    Geolocator.getPositionStream().listen((Position position) {
+      if (mounted){
+        setState(() {
+          _currentLocation = LatLng(position.latitude, position.longitude);
+          _updateMarkers();
+        });
+      }
+    });
+  }
+
+  Future<void> _loadCustomMarker() async {
+    _currentLocationIcon = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)),
+      'assets/current_location.png',
+    );
+    setState(() {}); // Refresh the UI after loading the custom marker
+  }
+
+  Future<void> _checkPermission() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return;
+    }
+    
+    LocationPermission permissionGranted = await Geolocator.checkPermission();
+
+    if (permissionGranted == LocationPermission.denied) {
+      permissionGranted = await Geolocator.requestPermission();
+      if (permissionGranted == LocationPermission.denied) {
+        return;
+      }
+    }
+
+    if (permissionGranted == LocationPermission.always || permissionGranted == LocationPermission.whileInUse) {
+      if (mounted){
+        setState(() => _hasPermission = true);
+
+        Position position = await Geolocator.getCurrentPosition();
+        _currentLocation = LatLng(position.latitude, position.longitude);
+        _updateMarkers();
+      }
+    }
+  }
+
+  void _updateMarkers(){
+    _markers = {};  
+
+    if (_currentLocation != null){
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('current_location'),
+          position: _currentLocation!,
+          icon: _currentLocationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          infoWindow: const InfoWindow(title: 'Current Location'),
+        ),
+      );
+    }
+
+    if (_pickedLocation != null){
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('picked_location'),
+          position: _pickedLocation!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: const InfoWindow(title: 'Picked Location'),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,12 +123,7 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
                 if (lat != null && lng != null){
                   setState(() {
                     _pickedLocation = LatLng(lat, lng);
-                    _markers = {
-                      Marker(
-                        markerId: const MarkerId('picked_location'),
-                        position: _pickedLocation!,
-                      ),
-                    };
+                    _updateMarkers();
                   });
                   _mapController?.animateCamera(CameraUpdate.newLatLng(_pickedLocation!));
                 } 
@@ -65,21 +142,21 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
 
       body: 
         GoogleMap(
+          // key forces refresh when permission changes
+          key: ValueKey(_hasPermission),
           onMapCreated: (controller) => _mapController = controller,
           initialCameraPosition: const CameraPosition(
             target: LatLng(1.3521, 103.8198), // Default to Singapore
             zoom: 12,
           ),
+          myLocationEnabled: _hasPermission,
+          myLocationButtonEnabled: _hasPermission,
+
           markers: _markers,
           onTap: (pos) {
             setState(() {
               _pickedLocation = pos;
-              _markers = {                          
-                Marker(
-                  markerId: const MarkerId('picked_location'),
-                  position: pos,
-                ),              
-              };
+              _updateMarkers();
             });
           },
         ),
