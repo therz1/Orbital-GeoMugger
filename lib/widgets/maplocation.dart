@@ -7,7 +7,11 @@ import 'placeSearchDelegate.dart';
 
 
 class MapSelectorPage extends StatefulWidget {
-  const MapSelectorPage({super.key});
+  final LatLng? initialLocation;
+  const MapSelectorPage({
+    super.key,
+    this.initialLocation
+  });
   @override
   State<MapSelectorPage> createState() => _MapSelectorPageState();
 }
@@ -26,6 +30,7 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
   @override
   void initState() {
     super.initState();
+    _pickedLocation = widget.initialLocation;
     _loadCustomMarker();
     _checkPermission();
 
@@ -125,7 +130,9 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
                     _pickedLocation = LatLng(lat, lng);
                     _updateMarkers();
                   });
-                  _mapController?.animateCamera(CameraUpdate.newLatLng(_pickedLocation!));
+                  if (_mapController != null){
+                    _mapController?.animateCamera(CameraUpdate.newLatLng(_pickedLocation!));
+                  }
                 } 
               }
             },
@@ -158,6 +165,7 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
               _pickedLocation = pos;
               _updateMarkers();
             });
+             _mapController?.animateCamera(CameraUpdate.newLatLng(_pickedLocation!));
           },
         ),
     );

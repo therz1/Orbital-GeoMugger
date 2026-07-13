@@ -40,6 +40,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
 
   LatLng? _pickedLocation;
   Set<Marker> _markers = {};
+  GoogleMapController? _mapController;   // TRACKS CAMERA MOVEMENT
 
   Color _tagColor(String category) {
     switch(category) {
@@ -338,60 +339,80 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 ),
                 const SizedBox(height: 10),
                 
-                /*
-                ListTile(
-                  title: Text(_pickedLocation == null ? 'No location selected' : 'Selected Location: (${_pickedLocation!.latitude.toStringAsFixed(4)}, ${_pickedLocation!.longitude.toStringAsFixed(4)})'),
-                  subtitle: _pickedLocation == null ? 
-                    null : const Text('Tap on the map to change location'),
-                  trailing: Icon(Icons.map),
-                  onTap: () async {
-                    final LatLng? result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MapSelectorPage()),
-                    );
-
-                    if (result != null){
-                      setState(() {
-                        _pickedLocation = result;
-                      });
-                    }
-                  }
-                */
-                InkWell(
-                  onTap: () async {
-                    final LatLng? result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MapSelectorPage()),
-                    );
-
-                    if (result != null){
-                      setState(() {
-                        _pickedLocation = result;
-                      });
-                    }
-                  },
-                  
-                  child: Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: _pickedLocation == null
-                        ? const Center(child: Text('Tap to select location on map'))
-                        : GoogleMap(
-                          initialCameraPosition: CameraPosition(target: _pickedLocation!, zoom: 15),
-                          zoomGesturesEnabled: false,
-                          scrollGesturesEnabled: false,
-                          markers: {
-                            Marker(
-                              markerId: const MarkerId('picked_location'),
-                              position: _pickedLocation!,
+                
+                SizedBox(
+                  height: 200,
+                  child: Stack(
+                    children: [
+                      // Map
+                      _pickedLocation == null 
+                        ? Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          }
-                        )
-                  )
+                            child: const Center(child: Text('Choose a Location')),
+                          )
+                        : ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: GoogleMap(
+                              initialCameraPosition: CameraPosition(target: _pickedLocation!, zoom: 15),
+                              zoomGesturesEnabled: true,
+                              scrollGesturesEnabled: true,
+                              markers: _markers,
+                              onMapCreated: (controller) {
+                                _mapController = controller;
+                              },
+                          ),
+                         ),
+                     
+                        Positioned(
+                          right: 10,
+                          top:10,
+                          child: FloatingActionButton.small(
+                            onPressed: () async {
+                              final LatLng? result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder:(context) => MapSelectorPage(initialLocation: _pickedLocation,)),
+                              );
+                              
+                              
+                              print("Result received: $result"); // Does this print the correct Lat/Lng?
+
+                              if (result != null) {
+                                print("Updating state with: $result");
+                                setState(() {
+                                  _pickedLocation = result;
+                                });
+                              }
+
+                              if (!mounted) return;
+
+                              if (result != null){
+                                setState(() {
+                                  _pickedLocation = result;
+                                  _markers = {
+                                    Marker(
+                                      markerId: const MarkerId('picked_location'),
+                                      position: _pickedLocation!,
+                                    ),
+                                  };
+                                });
+
+
+                                Future.delayed(const Duration(milliseconds: 300), (){
+                                    _mapController?.animateCamera(CameraUpdate.newLatLng(_pickedLocation!));
+                                });
+                              }
+                            },
+                            child: const Icon(Icons.edit),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
+
                 const SizedBox(height: 10),
                 Text(_pickedLocation == null ? 'No location selected' : 'Selected Location: (${_pickedLocation!.latitude.toStringAsFixed(4)}, ${_pickedLocation!.longitude.toStringAsFixed(4)})'),
                 const SizedBox(height: 10),
