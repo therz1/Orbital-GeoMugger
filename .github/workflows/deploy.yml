@@ -13,4 +13,4 @@ jobs:
         run: chmod +x ./deploy.sh
 
       - name: Deploy
-        run: ./deploy.sh
+        run: bash ./deploy.sh
