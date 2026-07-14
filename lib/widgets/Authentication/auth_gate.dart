@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_mugger/views/home_screen.dart';
-import 'package:geo_mugger/views/login_screen.dart';
+import 'package:geo_mugger/views/login/welcome_view.dart';
 import 'package:geo_mugger/views/onboarding_page.dart';
 
 
@@ -26,7 +26,7 @@ class AuthGate extends StatelessWidget{
         //case 1: when no user log in
         if(!authSnapshot.hasData || authSnapshot.data == null) {
           //print("DEBUG: Redirecting to LoginScreen because user is null.");
-          return LoginScreen();
+          return WelcomeView();
         }
         final User user = authSnapshot.data!;
 
