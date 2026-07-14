@@ -116,6 +116,7 @@ class RecommendedSpot extends StatelessWidget {
                             rating: rating,
                             imgUrl: imgUrl,
                             avgRating: avgRating,
+                            topTags: topTags, // Pass the topTags to the detail page
                           ),
                         ),
                       );
