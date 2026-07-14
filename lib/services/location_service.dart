@@ -113,6 +113,7 @@ class LocationService {
     required int rating,
     required String imgUrl,
     required double avgRating,
+    required List<dynamic> topTags,
   }) async {
     try {
       final User? currentUser = _auth.currentUser;
@@ -138,6 +139,7 @@ class LocationService {
           'averageRating': avgRating,
           'imageUrl': imgUrl,
           'timestamp': FieldValue.serverTimestamp(),
+          'topTags': topTags, // Save the top tags along with the location
         });
         return 'Location saved successfully.';
       }

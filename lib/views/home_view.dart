@@ -198,6 +198,9 @@ class _HomeViewState extends State<HomeView> {
                       ),
                     );
                   }
+
+
+                  
                   return ListView.builder(
                     itemCount: documents.length ,
                     padding: const EdgeInsets.all(12),
@@ -236,6 +239,7 @@ class _HomeViewState extends State<HomeView> {
                                   rating: rating,
                                   imgUrl: imgUrl,
                                   avgRating: avgRating,
+                                  topTags: topTags,
                                 ),
                               ),
                             );
