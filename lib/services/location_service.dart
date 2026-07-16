@@ -18,6 +18,7 @@ class LocationService {
     required int rating,
     required List<Map<String, String>> userSelectedTags,
     XFile? imageFile,
+    required GeoPoint geoLocation,
   }) async {
     try {
       final User? currentUser = _auth.currentUser;
@@ -77,6 +78,7 @@ class LocationService {
         'timestamp': FieldValue.serverTimestamp(),
         'allTags': allTags,
         'topTags': topTags,
+        'geoLocation': geoLocation,
       });
 
       batch.set(reviewRef, {

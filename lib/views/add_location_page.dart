@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart' ;
+import 'package:geo_mugger/widgets/maplocation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/location_service.dart';
 import '../widgets/Reviews/star_rating.dart';
 import '../widgets/Reviews/tag_selection.dart';
@@ -35,6 +37,10 @@ class _AddLocationPageState extends State<AddLocationPage> {
   //create a tagMap to store categories and tags
   Map<String, List<String>> _tagMap = {};
   final List<Map<String, String>> _selectedTags = [];
+
+  LatLng? _pickedLocation;
+  Set<Marker> _markers = {};
+  GoogleMapController? _mapController;   // TRACKS CAMERA MOVEMENT
 
   Color _tagColor(String category) {
     switch(category) {
@@ -77,50 +83,8 @@ class _AddLocationPageState extends State<AddLocationPage> {
       setState(() => _isLoadingTags = false);
     }
   }
-
-//   Widget _buildCategoryGroup(String categoryTitle, List<String> tags) {
-//     if(tags.isEmpty) return const SizedBox.shrink();
-
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         const SizedBox(height: 16),
-//         Text(
-//           categoryTitle,
-//           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-//         ),
-//         const SizedBox(height: 8),
-//         Wrap(
-//           spacing: 8.0,
-//           runSpacing: 8.0,
-//           children: tags.map((tagName) {
-//             final bool isSelected = _selectedTags.any((t) => t['name'] ==  tagName);
-//             return FilterChip(
-//               label: Text(tagName, style: TextStyle(color: isSelected? Colors.white: Colors.black, fontSize: 13),),
-//               selected: isSelected,
-//               onSelected: (bool selected) {
-//                 setState(() {
-//                 if (selected) {
-//                   _selectedTags.add({'name': tagName, 'category': categoryTitle});
-//                 } else{
-//                   _selectedTags.removeWhere((t) => t['name'] == tagName);
-//                 }
-//               });
-//           },
-//           backgroundColor: Colors.grey,
-//           selectedColor: _tagColor(categoryTitle),
-//           showCheckmark: false,
-//           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),
-//           side: BorderSide(color: isSelected? Colors.transparent: Colors.grey),
-//           ),
-//           );
-//   }).toList(),
-//   ),
-//   ],
-//   );
-// }
           
-    Future<void> _takePhoto() async {
+  Future<void> _takePhoto() async {
     try {
       // 📸 This single line works perfectly on Web, Android, and iOS!
       final XFile? photo = await _picker.pickImage(
@@ -154,10 +118,20 @@ class _AddLocationPageState extends State<AddLocationPage> {
   void _submitLocation() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_pickedLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a location on the map'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
 
     final String locationName = _locationNameController.text.trim();
     final String review = _reviewController.text.trim();
+
+    final geoLocation = GeoPoint(_pickedLocation!.latitude, _pickedLocation!.longitude);
+
 
     final String? errorResult = await LocationService().addLocation(
       //locationId: widget.locationId,
@@ -166,6 +140,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
       rating: _currentRating,
       userSelectedTags: _selectedTags,
       imageFile: _pickerFile,
+      geoLocation: geoLocation,
     );
 
     if (!mounted) return;
@@ -356,6 +331,93 @@ class _AddLocationPageState extends State<AddLocationPage> {
     
                 const SizedBox(height: 20),
 
+
+                // Insert Location here:
+                const Text(
+                  'Location on Map', 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                ),
+                const SizedBox(height: 10),
+                
+                
+                SizedBox(
+                  height: 200,
+                  child: Stack(
+                    children: [
+                      // Map
+                      _pickedLocation == null 
+                        ? Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Center(child: Text('Choose a Location')),
+                          )
+                        : ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: GoogleMap(
+                              initialCameraPosition: CameraPosition(target: _pickedLocation!, zoom: 15),
+                              zoomGesturesEnabled: true,
+                              scrollGesturesEnabled: true,
+                              markers: _markers,
+                              onMapCreated: (controller) {
+                                _mapController = controller;
+                              },
+                          ),
+                         ),
+                     
+                        Positioned(
+                          right: 10,
+                          top:10,
+                          child: FloatingActionButton.small(
+                            onPressed: () async {
+                              final LatLng? result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder:(context) => MapSelectorPage(initialLocation: _pickedLocation,)),
+                              );
+                              
+                              
+                              print("Result received: $result"); // Does this print the correct Lat/Lng?
+
+                              if (result != null) {
+                                print("Updating state with: $result");
+                                setState(() {
+                                  _pickedLocation = result;
+                                });
+                              }
+
+                              if (!mounted) return;
+
+                              if (result != null){
+                                setState(() {
+                                  _pickedLocation = result;
+                                  _markers = {
+                                    Marker(
+                                      markerId: const MarkerId('picked_location'),
+                                      position: _pickedLocation!,
+                                    ),
+                                  };
+                                });
+
+
+                                Future.delayed(const Duration(milliseconds: 300), (){
+                                    _mapController?.animateCamera(CameraUpdate.newLatLng(_pickedLocation!));
+                                });
+                              }
+                            },
+                            child: const Icon(Icons.edit),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+                Text(_pickedLocation == null ? 'No location selected' : 'Selected Location: (${_pickedLocation!.latitude.toStringAsFixed(4)}, ${_pickedLocation!.longitude.toStringAsFixed(4)})'),
+                const SizedBox(height: 10),
+
+                
                 // review section
                 const Text(
                   'Review', 
