@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.your.package.name">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -10,8 +10,8 @@
         android:icon="@mipmap/ic_launcher">
 
         <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAULddZHkkwEINgwDJwtw4d4FTgZbuVGH4" />
+            android:name="com.google.android.your_sevice.API_KEY"
+            android:value="${apikey}" />
 
         <activity
             android:name=".MainActivity"
