@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_mugger/services/hottest_spots_service.dart';
 import 'package:geo_mugger/views/location_page.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class HottestSpotsSection extends StatefulWidget {
   const HottestSpotsSection({super.key});
@@ -74,6 +75,36 @@ class _HottestSpotsSectionState extends State<HottestSpotsSection> {
                       final String docId = docSnapshot.id;
                       final String review = docData['review'] ?? "see user reviews";
                       final String imgUrl = docData['imageUrl'] ?? '';
+
+                      // Handles geolocation
+                      LatLng geoLocation = const LatLng(1.3521, 103.8198); // Default fallback
+
+                      final dynamic locationData = docData['geoLocation'];
+
+                      if (locationData is String && locationData.isNotEmpty) {
+                        final parts = locationData.split(',');
+                        
+                        // Check that the split actually created at least two parts
+                        if (parts.length >= 2) {
+                          final lat = double.tryParse(parts[0].trim());
+                          final lng = double.tryParse(parts[1].trim());
+
+                          if (lat != null && lng != null) {
+                            geoLocation = LatLng(lat, lng);
+                          }
+                        } else {
+                          // This handles strings like "1.3521" (no comma)
+                          debugPrint("Invalid location format found: $locationData");
+                        }
+                      } else if (locationData is GeoPoint) {
+                        geoLocation = LatLng(locationData.latitude, locationData.longitude);
+                      }
+
+                      final GeoPoint geoPoint = GeoPoint(
+                        geoLocation.latitude, 
+                        geoLocation.longitude
+                      );
+
                       final List<dynamic> topTags = docData['topTags'] ?? [];
 
                       return InkWell(
@@ -91,6 +122,7 @@ class _HottestSpotsSectionState extends State<HottestSpotsSection> {
                                 imgUrl: imgUrl,
                                 avgRating: rating,
                                 topTags: topTags,
+                                geoLocation: geoPoint,
                               ),
                             ),
                           );
