@@ -27,7 +27,7 @@ class AuthService {
         return null;
       } catch (firestoreError){
         //await userCredential.user?.delete();
-        return "Registration failed at data sync. Please try again.";
+        return "Registration failed at data sync. Please try again. $firestoreError";
       }
     } on FirebaseAuthException catch (e) {
       return e.message;

@@ -1,5 +1,6 @@
 //import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geo_mugger/views/login/welcome_view.dart';
 import 'add_location_page.dart';
 import 'home_view.dart';
 import 'saved_view.dart';
@@ -61,7 +62,7 @@ class _HomePageState extends State<HomePage> {
               // 2. Clear navigation stack and bounce back to the login gateway
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  MaterialPageRoute(builder: (context) => const WelcomeView()),
                   (route) => false,
                 );
                 }
