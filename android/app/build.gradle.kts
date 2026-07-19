@@ -7,47 +7,31 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-import java.util.Properties
 
-// Create a function to load the .env file
-fun getEnvProperty(key: String): String {
-    val envFile = rootProject.file(".env")
-    if (envFile.exists()) {
-        val properties = Properties()
-        properties.load(envFile.inputStream())
-        return properties.getProperty(key) ?: ""
-    }
-    return ""
+import java.util.Properties
+import java.io.FileInputStream
+
+var localProperties = Properties()
+var localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
 android {
     namespace = "com.example.geo_mugger"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
+    compileSdk = 36
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.geo_mugger"
-        // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        
-        val apiKey = getEnvProperty("MY_API_KEY")
-        
-        // Pass it to Java/Kotlin code
-        buildConfigField("String", "MY_API_KEY", "\"$apiKey\"")
-        
-        // Pass it to Manifest (if needed)
-        manifestPlaceholders["apiKey"] = apiKey
-
+        applicationId = "com.example.geo_mugger"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Pass it to Manifest (if needed)
+
+        val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {
@@ -57,8 +41,15 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
+flutter {
+    source = "../.."
+}
 
 kotlin {
     compilerOptions {
@@ -66,9 +57,10 @@ kotlin {
     }
 }
 
-
-
-
-flutter {
-    source = "../.."
+// Ensure the Java compiler also uses 17
+android {
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }
