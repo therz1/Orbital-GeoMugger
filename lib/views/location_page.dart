@@ -1,12 +1,14 @@
 //import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:geo_mugger/widgets/navigate.dart';
 import '../services/location_service.dart';
 import '../widgets/star_display.dart';
 import '../widgets/main_star_display.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'add_review_page.dart';
 
 class LocationDetailPage extends StatefulWidget {
@@ -17,6 +19,7 @@ class LocationDetailPage extends StatefulWidget {
   final String imgUrl;
   final double avgRating;
   final List<dynamic> topTags; // New field for top tags
+  final GeoPoint geoLocation;
 
   // The constructor requires the data fields passed from the clicked card
   const LocationDetailPage({
@@ -28,6 +31,7 @@ class LocationDetailPage extends StatefulWidget {
     required this.imgUrl,
     required this.avgRating,
     required this.topTags, // Include topTags in the constructor
+    required this.geoLocation,
   });
 
   @override
@@ -243,6 +247,25 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                   );
                 },
                 child: const Text('Add Review?'),
+              ),
+            ),
+            const Divider(height: 16, thickness: 1),
+
+            // Navigation
+            SizedBox(
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DestinationPage(
+                        destination: LatLng(widget.geoLocation.latitude,widget.geoLocation.longitude) 
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Navigate?'),
               ),
             ),
             const Divider(height: 16, thickness: 1),

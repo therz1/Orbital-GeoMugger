@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_mugger/views/location_page.dart';
 import 'package:geo_mugger/widgets/main_star_display.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class RecommendedSpot extends StatelessWidget {
   const RecommendedSpot({super.key});
@@ -96,6 +97,35 @@ class RecommendedSpot extends StatelessWidget {
                 final double avgRating = rawRating.toDouble();
                 final String imgUrl = data['imageUrl'] ?? '';
 
+                // Handles geolocation
+                LatLng geoLocation = const LatLng(1.3521, 103.8198); // Default fallback
+
+                final dynamic locationData = data['geoLocation'];
+
+                if (locationData is String && locationData.isNotEmpty) {
+                  final parts = locationData.split(',');
+                       
+                  // Check that the split actually created at least two parts
+                  if (parts.length >= 2) {
+                    final lat = double.tryParse(parts[0].trim());
+                    final lng = double.tryParse(parts[1].trim());
+
+                    if (lat != null && lng != null) {
+                     geoLocation = LatLng(lat, lng);
+                    }
+                  } else {
+                    // This handles strings like "1.3521" (no comma)
+                    debugPrint("Invalid location format found: $locationData");
+                  }
+                } else if (locationData is GeoPoint) {
+                  geoLocation = LatLng(locationData.latitude, locationData.longitude);
+                }
+
+                final GeoPoint geoPoint = GeoPoint(
+                  geoLocation.latitude, 
+                  geoLocation.longitude
+                );
+
                 final List<dynamic> topTags = data['topTags'] ?? [];
 
                 return Card(
@@ -117,6 +147,7 @@ class RecommendedSpot extends StatelessWidget {
                             imgUrl: imgUrl,
                             avgRating: avgRating,
                             topTags: topTags, // Pass the topTags to the detail page
+                            geoLocation: geoPoint,
                           ),
                         ),
                       );
