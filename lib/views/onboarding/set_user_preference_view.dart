@@ -6,14 +6,14 @@ import 'package:geo_mugger/widgets/Reviews/tag_selection.dart';
 
 
 //stateful widget because we are keeping track of the tag selection
-class OnboardingPage extends StatefulWidget {
-  const OnboardingPage({super.key});
+class SetUserPreferenceView extends StatefulWidget {
+  const SetUserPreferenceView({super.key});
 
   @override
-  State<OnboardingPage> createState() => _OnboardingPageState();
+  State<SetUserPreferenceView> createState() => _SetUserPreferenceViewState();
 }
 
-class _OnboardingPageState extends State<OnboardingPage> {
+class _SetUserPreferenceViewState extends State<SetUserPreferenceView> {
   //basically the same as tag_selection logic in add_review and add_location
   final Map<String, List<String>> _tagMap = {
     'Vibes': ['Bright', 'Cozy', 'Chill', 'Dark Academia', 'Library', 'Quiet', 'White noise'],
