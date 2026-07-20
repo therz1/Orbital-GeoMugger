@@ -1,28 +1,21 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:geo_mugger/views/home_screen.dart';
 import 'package:geo_mugger/widgets/Reviews/tag_selection.dart';
 
 
 //stateful widget because we are keeping track of the tag selection
-class SetUserPreferenceView extends StatefulWidget {
-  const SetUserPreferenceView({super.key});
+class SetUserPreferenceView extends StatelessWidget {
+  final List<Map<String, String>> selectedTags;
+  final VoidCallback onStateChanged;
+  final VoidCallback onSubmit;
 
-  @override
-  State<SetUserPreferenceView> createState() => _SetUserPreferenceViewState();
-}
+  const SetUserPreferenceView ({
+    super.key,
+    required this.selectedTags,
+    required this.onStateChanged,
+    required this.onSubmit,
+  });
 
-class _SetUserPreferenceViewState extends State<SetUserPreferenceView> {
-  //basically the same as tag_selection logic in add_review and add_location
-  final Map<String, List<String>> _tagMap = {
-    'Vibes': ['Bright', 'Cozy', 'Chill', 'Dark Academia', 'Library', 'Quiet', 'White noise'],
-    'Amenities': ['Air con', 'Comfortable seats', 'Discussion Area', 'Lamp', 'Multiple seats', 'Power Outlet', 'Printer', 'Standing desk' 'Wifi'],
-    'Facilities near-by': ['Bus stop', 'Bookshop', 'Car park', 'Convenience store', 'Food Court', 'Garden', 'Public toilet', 'Mall', 'MRT']
-  }; //from main.dart
-
-  final List<Map<String, String>> _selectedTags = [];
-  bool _isLoading = false;
+ 
 
 //reuse from add_location
   Color _tagColor(String cateogry) {
@@ -39,48 +32,49 @@ class _SetUserPreferenceViewState extends State<SetUserPreferenceView> {
   }
 
   //logic after submission of onboarding page
-  Future<void> _savePreferenceAndNavigate() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if(user == null) return;
-    setState(() => _isLoading = true);
+  // note: this is moved to onboarding Wrapper!
+  // Future<void> _savePreferenceAndNavigate() async {
+  //   final user = FirebaseAuth.instance.currentUser;
+  //   if(user == null) return;
+  //   setState(() => _isLoading = true);
 
-    final List<String> stringTags = _selectedTags.map((tagMap) => tagMap['name'] ?? '')
-    .where((name) => name.isNotEmpty).toList();
+  //   final List<String> stringTags = _selectedTags.map((tagMap) => tagMap['name'] ?? '')
+  //   .where((name) => name.isNotEmpty).toList();
 
-    try {
-      //storing data into firebase
-      await FirebaseFirestore.instance.collection('user').doc(user.uid)
-      .set({
-        'preferredTags': stringTags,
-        'hasCompletedOnboarding': true,
-        'updatedAt' : FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    if (mounted){
-      Navigator.pushReplacement(context,
-      MaterialPageRoute(builder: (context) => HomePage()),
-      );
-    }
-  } catch (tagError) {
-    setState(() => _isLoading = false);
-    if(mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving tag preference: $tagError')),
-      );
-    }
-  }
-  }
+  //   try {
+  //     //storing data into firebase
+  //     await FirebaseFirestore.instance.collection('user').doc(user.uid)
+  //     .set({
+  //       'preferredTags': stringTags,
+  //       'hasCompletedOnboarding': true,
+  //       'updatedAt' : FieldValue.serverTimestamp(),
+  //     }, SetOptions(merge: true));
+  //   if (mounted){
+  //     Navigator.pushReplacement(context,
+  //     MaterialPageRoute(builder: (context) => HomePage()),
+  //     );
+  //   }
+  // } catch (tagError) {
+  //   setState(() => _isLoading = false);
+  //   if(mounted) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Error saving tag preference: $tagError')),
+  //     );
+  //   }
+  // }
+  // }
   @override
 
   Widget build(BuildContext context) {
+  //moved tagMap here!
+    final Map<String, List<String>> tagMap = {
+    'Vibes': ['Bright', 'Cozy', 'Chill', 'Dark Academia', 'Library', 'Quiet', 'White noise'],
+    'Amenities': ['Air con', 'Comfortable seats', 'Discussion Area', 'Lamp', 'Multiple seats', 'Power Outlet', 'Printer', 'Standing desk' 'Wifi'],
+    'Facilities near-by': ['Bus stop', 'Bookshop', 'Car park', 'Convenience store', 'Food Court', 'Garden', 'Public toilet', 'Mall', 'MRT']
+  }; //from main.dart
+
     //Standard UI stuff
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          color: Colors.white
-        ),
-        child: SafeArea(
-          child: _isLoading ? Center(child: CircularProgressIndicator(color: Colors.black)) 
-          : Column(
+    return Column(
             children: [
               Expanded(
                 child: ListView(
@@ -99,20 +93,20 @@ class _SetUserPreferenceViewState extends State<SetUserPreferenceView> {
                     SizedBox(height: 20),
                     //reusing tag selection logic from add_locationa again!
                     
-                    TagSelection(categoryTitle: 'Vibes', tags: _tagMap['Vibes'] ?? [], selectedTags: _selectedTags, 
+                    TagSelection(categoryTitle: 'Vibes', tags: tagMap['Vibes'] ?? [], selectedTags: selectedTags, 
                     getTagColor: _tagColor,
-                    onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
-                    onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+                    onTagsAdded: (tag){selectedTags.add(tag); onStateChanged();}, 
+                    onTagRemoved: (tagName) {selectedTags.removeWhere((t) => t['name'] == tagName); onStateChanged();},),
+                    
+                    TagSelection(categoryTitle: 'Amenities', tags: tagMap['Amenities'] ?? [], selectedTags: selectedTags, 
+                    getTagColor: _tagColor,
+                    onTagsAdded: (tag){selectedTags.add(tag); onStateChanged();}, 
+                    onTagRemoved: (tagName) {selectedTags.removeWhere((t) => t['name'] == tagName); onStateChanged();},),
 
-                    TagSelection(categoryTitle: 'Amenities', tags: _tagMap['Amenities'] ?? [], selectedTags: _selectedTags, 
+                    TagSelection(categoryTitle: 'Facilities near-by', tags: tagMap['Facilities near-by'] ?? [], selectedTags: selectedTags, 
                     getTagColor: _tagColor,
-                    onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
-                    onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
-
-                    TagSelection(categoryTitle: 'Facilities near-by', tags: _tagMap['Facilities near-by'] ?? [], selectedTags: _selectedTags, 
-                    getTagColor: _tagColor,
-                    onTagsAdded: (tag) => setState(() => _selectedTags.add(tag)), 
-                    onTagRemoved: (tagName) => setState(() => _selectedTags.removeWhere((t) => t['name'] == tagName)),),
+                    onTagsAdded: (tag){selectedTags.add(tag); onStateChanged();}, 
+                    onTagRemoved: (tagName) {selectedTags.removeWhere((t) => t['name'] == tagName); onStateChanged();},),
 
                   ],
                 ),
@@ -129,17 +123,14 @@ class _SetUserPreferenceViewState extends State<SetUserPreferenceView> {
                       shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(28)),
                       elevation: 4,
                     ),
-                    onPressed: _selectedTags.isEmpty ? null
-                    : _savePreferenceAndNavigate, 
+                    onPressed: selectedTags.isEmpty ? null 
+                    : onSubmit, 
                     child: Text("Submit", style: TextStyle(fontSize:16, fontWeight:FontWeight.bold),
                     ),
-                    ),
-                  ),
-                  ),
-            ],
+            ),
           ),
-    ),
-    ),
+        ),
+      ],
     );
   }
 }
