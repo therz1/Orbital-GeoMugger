@@ -70,48 +70,54 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
       return Scaffold(
-        appBar: AppBar(
-          //title: const Text('Surf Spots'),
-          backgroundColor: Colors.orange,
-        ),
+        // appBar: AppBar(
+        //   //title: const Text('Surf Spots'),
+        //   backgroundColor: Colors.orange,
+        // ),
         body: Column(
           children: [
             // Search bar
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: LocationSearchBar(
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value.toLowerCase();
-                        });
+            Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 255, 136, 1)
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: LocationSearchBar(
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value.toLowerCase();
+                            });
+                          },
+                        ),
+                      ),
+                      IconButton(icon: Badge(
+                        isLabelVisible: _selectedTags.isNotEmpty,
+                        label: Text(_selectedTags.length.toString()),
+                        child: const Icon(Icons.filter_list, size: 28),
+                      ),
+                      onPressed: () async {
+                        final List<String>? updatedFilter = await showDialog<List<String>>(
+                          context: context,
+                          builder: (context) => TagFilter(tagMap: _tagMap, initialSelectedTags: _selectedTags, ),
+                        );
+                        if (updatedFilter != null) {
+                          setState(() {
+                            _selectedTags.clear();
+                            _selectedTags.addAll(updatedFilter);
+                          });
+                        }
                       },
-                    ),
+                      ),
+                    ],
                   ),
-                  IconButton(icon: Badge(
-                    isLabelVisible: _selectedTags.isNotEmpty,
-                    label: Text(_selectedTags.length.toString()),
-                    child: const Icon(Icons.filter_list, size: 28),
-                  ),
-                  onPressed: () async {
-                    final List<String>? updatedFilter = await showDialog<List<String>>(
-                      context: context,
-                      builder: (context) => TagFilter(tagMap: _tagMap, initialSelectedTags: _selectedTags, ),
-                    );
-                    if (updatedFilter != null) {
-                      setState(() {
-                        _selectedTags.clear();
-                        _selectedTags.addAll(updatedFilter);
-                      });
-                    }
-                  },
-                  ),
-                ],
+                ),
               ),
-            ),
-
+            
             if (_selectedTags.isNotEmpty) 
             Container(
               height: 40,
