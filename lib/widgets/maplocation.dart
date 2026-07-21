@@ -133,6 +133,8 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
               );
 
               if (p != null){
+                await Future.delayed(const Duration(milliseconds: 100));
+                
                 final detail = await _places.fetchPlace(
                   p.placeId ?? '',
                   fields: [PlaceField.Location, PlaceField.Id],
@@ -140,7 +142,6 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
                 final lat = detail.place?.latLng?.lat;
                 final lng = detail.place?.latLng?.lng;
 
-                print("Fetched Lat: $lat, Lng: $lng");
 
                 // Searched Location exists - now we will move to it.
                 if (lat != null && lng != null){
@@ -152,9 +153,7 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
                   _mapController?.animateCamera(
                     maps.CameraUpdate.newLatLng(_pickedLocation!)
                   );
-                } else {
-                  print("Failed to fetch location coordinates.");
-                }
+                } 
               }
             },
           ),
