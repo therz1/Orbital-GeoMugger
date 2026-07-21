@@ -47,29 +47,29 @@ class _HomePageState extends State<HomePage> {
         currentBodyView = const HomeView();
     }
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text('GeoMugger', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
-            tooltip: 'Logout',
-            onPressed: () async {
-              // 1. Trigger the Firebase sign out routine pipeline
-              await AuthService().logout();
+      // appBar: AppBar(
+      //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      //   title: Text('GeoMugger', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+      //   centerTitle: true,
+      //   actions: [
+      //     IconButton(
+      //       icon: const Icon(Icons.logout, color: Colors.black),
+      //       tooltip: 'Logout',
+      //       onPressed: () async {
+      //         // 1. Trigger the Firebase sign out routine pipeline
+      //         await AuthService().logout();
 
-              // 2. Clear navigation stack and bounce back to the login gateway
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const WelcomeView()),
-                  (route) => false,
-                );
-                }
-            },
-          ),
-        ],
-      ),
+      //         // 2. Clear navigation stack and bounce back to the login gateway
+      //         if (context.mounted) {
+      //           Navigator.of(context).pushAndRemoveUntil(
+      //             MaterialPageRoute(builder: (context) => const WelcomeView()),
+      //             (route) => false,
+      //           );
+      //           }
+      //       },
+      //     ),
+      //   ],
+      // ),
       
       body: currentBodyView,
       bottomNavigationBar: BottomNavigationBar(
