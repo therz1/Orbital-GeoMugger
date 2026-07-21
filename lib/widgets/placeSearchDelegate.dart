@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // import 'package:google_maps_webservice_ex/places.dart'; // Ensure you use the updated package
-import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
+import 'package:google_places_sdk_plus/google_places_sdk_plus.dart';
 
 // This class is what showSearch expects
 class PlaceSearchDelegate extends SearchDelegate<AutocompletePrediction?> {
@@ -70,7 +70,7 @@ class PlaceSearchDelegate extends SearchDelegate<AutocompletePrediction?> {
             final prediction = predictions[index];
             return ListTile(
               leading: const Icon(Icons.location_on),
-              title: Text(prediction.fullText),
+              title: Text(prediction.fullText ?? ''),
               onTap: () {
                 close(context, prediction);
               },

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart' ;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as maps;
-import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
+import 'package:google_places_sdk_plus/google_places_sdk_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'placeSearchDelegate.dart';
 
@@ -134,11 +134,13 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
 
               if (p != null){
                 final detail = await _places.fetchPlace(
-                  p.placeId,
-                  fields: [PlaceField.Location],
+                  p.placeId ?? '',
+                  fields: [PlaceField.Location, PlaceField.Id],
                 );
                 final lat = detail.place?.latLng?.lat;
                 final lng = detail.place?.latLng?.lng;
+
+                print("Fetched Lat: $lat, Lng: $lng");
 
                 // Searched Location exists - now we will move to it.
                 if (lat != null && lng != null){
@@ -150,7 +152,9 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
                   _mapController?.animateCamera(
                     maps.CameraUpdate.newLatLng(_pickedLocation!)
                   );
-                } 
+                } else {
+                  print("Failed to fetch location coordinates.");
+                }
               }
             },
           ),
