@@ -147,9 +147,9 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
                     _updateMarkers();
                   });
 
-                  if (_mapController != null){
-                    _mapController?.animateCamera(maps.CameraUpdate.newLatLng(_pickedLocation!));
-                  }
+                  _mapController?.animateCamera(
+                    maps.CameraUpdate.newLatLng(_pickedLocation!)
+                  );
                 } 
               }
             },
