@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_mugger/views/home_screen.dart';
 import 'package:geo_mugger/views/login/welcome_view.dart';
-import 'package:geo_mugger/views/onboarding_page.dart';
+import 'package:geo_mugger/views/onboarding/onboarding_wrapper.dart';
 
 
 //to dictate which screen to go to
@@ -55,7 +55,7 @@ class AuthGate extends StatelessWidget{
               }
             }
             
-            return OnboardingPage();
+            return OnboardingWrapper();
           }
         );
       },
