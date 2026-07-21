@@ -52,7 +52,8 @@ dependencies:
   geolocator: ^14.0.3
   url_launcher: ^6.1.10
   geocoding: ^5.0.0
-  google_maps_webservice_ex: ^0.0.1
+  #google_maps_webservice_ex: ^0.0.1
+  google_places_sdk_plus: ^1.1.0
   
 dev_dependencies:
   flutter_test:
