@@ -1,39 +1,76 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_webservice_ex/places.dart'; // Ensure you use the updated package
+// import 'package:google_maps_webservice_ex/places.dart'; // Ensure you use the updated package
+import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
 
 // This class is what showSearch expects
-class PlaceSearchDelegate extends SearchDelegate<Prediction?> {
-  final GoogleMapsPlaces _places;
+class PlaceSearchDelegate extends SearchDelegate<AutocompletePrediction?> {
+  final FlutterGooglePlacesSdk _places;
 
   PlaceSearchDelegate(this._places);
 
   @override
   List<Widget>? buildActions(BuildContext context) {
-    return [IconButton(icon: const Icon(Icons.clear), onPressed: () => query = "")];
+    // Defines the icon on the right side of the search bar
+    return [
+      IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () => query = "",
+      ),
+    ];
   }
 
   @override
   Widget? buildLeading(BuildContext context) {
-    return IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => close(context, null));
+    // Defines the icon on the left side (usually a back button)
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () => close(context, null),
+    );
   }
 
   @override
-  Widget buildResults(BuildContext context) => Container();
-
+  Widget buildResults(BuildContext context) {
+    // This is shown when the user hits the "Enter/Search" button.
+    // For a simple selector, you can just return an empty container or 
+    // re-run the suggestions logic.
+    return buildSuggestions(context);
+  }
   @override
   Widget buildSuggestions(BuildContext context) {
-    // Your logic to call _places.autocomplete(query)
-    // and return a ListView of suggestions goes here
-    return FutureBuilder<PlacesAutocompleteResponse>(
-      future: _places.autocomplete(query, components: [Component(Component.country, "sg")]),
+    // Calls _places.autocomplete(query) and return a ListView of suggestions goes here
+    
+    // 1. Avoid spamming API for empty queries
+    if (query.isEmpty){
+      return const Center(child: Text("Enter Location"));
+    }
+    
+    return FutureBuilder<FindAutocompletePredictionsResponse>(
+      future: _places.findAutocompletePredictions(
+        query, 
+        countries: ['sg']
+      ),
+      
       builder: (context, snapshot){
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        
+        if (snapshot.hasError) {
+          return const Center(child: Text("Error fetching suggestions"));
+        }
+        
+        if (!snapshot.hasData || snapshot.data!.predictions.isEmpty){
+          return const Center(child: Text("No results found"));
+        }
+
+        final predictions = snapshot.data!.predictions;
         return ListView.builder(
           itemCount: snapshot.data!.predictions.length,
           itemBuilder: (context, index) {
-            final prediction = snapshot.data!.predictions[index];
+            final prediction = predictions[index];
             return ListTile(
-              title: Text(prediction.description ?? ""),
+              leading: const Icon(Icons.location_on),
+              title: Text(prediction.fullText),
               onTap: () {
                 close(context, prediction);
               },

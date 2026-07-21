@@ -1,13 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart' ;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_webservice_ex/places.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as maps;
+import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
 import 'package:geolocator/geolocator.dart';
 import 'placeSearchDelegate.dart';
 
 
 class MapSelectorPage extends StatefulWidget {
-  final LatLng? initialLocation;
+  final maps.LatLng? initialLocation;
   const MapSelectorPage({
     super.key,
     this.initialLocation
@@ -19,25 +20,36 @@ class MapSelectorPage extends StatefulWidget {
 class _MapSelectorPageState extends State<MapSelectorPage> {
   final String _apikey = dotenv.env['CLOUD_API'] ?? ""; // Replace with your actual API key
 
-  GoogleMapController? _mapController;
-  LatLng? _pickedLocation;
-  LatLng? _currentLocation;
+  maps.GoogleMapController? _mapController;
+  maps.LatLng? _pickedLocation;
+  maps.LatLng? _currentLocation;
 
-  Set<Marker> _markers = {};
-  BitmapDescriptor? _currentLocationIcon;
+  Set<maps.Marker> _markers = {};
+  maps.BitmapDescriptor? _currentLocationIcon;
   bool _hasPermission = false;
   
+  StreamSubscription<Position>? _positionStream;
+  late FlutterGooglePlacesSdk _places;
+
+  @override
+  void dispose() {
+    _positionStream?.cancel(); // 3. Cancel the subscription
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
+    _places = FlutterGooglePlacesSdk(dotenv.env['CLOUD_API']!);
+    
     _pickedLocation = widget.initialLocation;
     _loadCustomMarker();
     _checkPermission();
 
-    Geolocator.getPositionStream().listen((Position position) {
+    _positionStream = Geolocator.getPositionStream().listen((Position position) {
       if (mounted){
         setState(() {
-          _currentLocation = LatLng(position.latitude, position.longitude);
+          _currentLocation = maps.LatLng(position.latitude, position.longitude);
           _updateMarkers();
         });
       }
@@ -45,7 +57,7 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
   }
 
   Future<void> _loadCustomMarker() async {
-    _currentLocationIcon = await BitmapDescriptor.asset(
+    _currentLocationIcon = await maps.BitmapDescriptor.asset(
       const ImageConfiguration(size: Size(48, 48)),
       'assets/current_location.png',
     );
@@ -72,7 +84,7 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
         setState(() => _hasPermission = true);
 
         Position position = await Geolocator.getCurrentPosition();
-        _currentLocation = LatLng(position.latitude, position.longitude);
+        _currentLocation = maps.LatLng(position.latitude, position.longitude);
         _updateMarkers();
       }
     }
@@ -83,22 +95,22 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
 
     if (_currentLocation != null){
       _markers.add(
-        Marker(
-          markerId: const MarkerId('current_location'),
+        maps.Marker(
+          markerId: const maps.MarkerId('current_location'),
           position: _currentLocation!,
-          icon: _currentLocationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          infoWindow: const InfoWindow(title: 'Current Location'),
+          icon: _currentLocationIcon ?? maps.BitmapDescriptor.defaultMarkerWithHue(maps.BitmapDescriptor.hueBlue),
+          infoWindow: const maps.InfoWindow(title: 'Current Location'),
         ),
       );
     }
 
     if (_pickedLocation != null){
       _markers.add(
-        Marker(
-          markerId: const MarkerId('picked_location'),
+        maps.Marker(
+          markerId: const maps.MarkerId('picked_location'),
           position: _pickedLocation!,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          infoWindow: const InfoWindow(title: 'Picked Location'),
+          icon: maps.BitmapDescriptor.defaultMarkerWithHue(maps.BitmapDescriptor.hueRed),
+          infoWindow: const maps.InfoWindow(title: 'Picked Location'),
         ),
       );
     }
@@ -114,24 +126,29 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () async {
-              final places = GoogleMapsPlaces(apiKey: _apikey);
-              final Prediction? p = await showSearch<Prediction?>(
+              //final places = GoogleMapsPlaces(apiKey: _apikey);
+              final AutocompletePrediction? p = await showSearch<AutocompletePrediction?>(
                 context: context,
-                delegate: PlaceSearchDelegate(places),
+                delegate: PlaceSearchDelegate(_places),
               );
 
               if (p != null){
-                final detail = await GoogleMapsPlaces(apiKey: _apikey).getDetailsByPlaceId(p.placeId!);
-                final lat = detail.result?.geometry?.location.lat;
-                final lng = detail.result?.geometry?.location.lng;
+                final detail = await _places.fetchPlace(
+                  p.placeId,
+                  fields: [PlaceField.Location],
+                );
+                final lat = detail.place?.latLng?.lat;
+                final lng = detail.place?.latLng?.lng;
 
+                // Searched Location exists - now we will move to it.
                 if (lat != null && lng != null){
                   setState(() {
-                    _pickedLocation = LatLng(lat, lng);
+                    _pickedLocation = maps.LatLng(lat, lng);
                     _updateMarkers();
                   });
+
                   if (_mapController != null){
-                    _mapController?.animateCamera(CameraUpdate.newLatLng(_pickedLocation!));
+                    _mapController?.animateCamera(maps.CameraUpdate.newLatLng(_pickedLocation!));
                   }
                 } 
               }
@@ -148,12 +165,12 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
 
 
       body: 
-        GoogleMap(
+        maps.GoogleMap(
           // key forces refresh when permission changes
           key: ValueKey(_hasPermission),
           onMapCreated: (controller) => _mapController = controller,
-          initialCameraPosition: const CameraPosition(
-            target: LatLng(1.3521, 103.8198), // Default to Singapore
+          initialCameraPosition: const maps.CameraPosition(
+            target: maps.LatLng(1.3521, 103.8198), // Default to Singapore
             zoom: 12,
           ),
           myLocationEnabled: _hasPermission,
@@ -165,7 +182,7 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
               _pickedLocation = pos;
               _updateMarkers();
             });
-             _mapController?.animateCamera(CameraUpdate.newLatLng(_pickedLocation!));
+             _mapController?.animateCamera(maps.CameraUpdate.newLatLng(_pickedLocation!));
           },
         ),
     );
