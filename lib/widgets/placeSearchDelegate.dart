@@ -47,7 +47,9 @@ class PlaceSearchDelegate extends SearchDelegate<AutocompletePrediction?> {
     return FutureBuilder<FindAutocompletePredictionsResponse>(
       future: _places.findAutocompletePredictions(
         query, 
-        countries: ['sg']
+        countries: ['sg'],
+        origin: null,
+        locationBias: null,
       ),
       
       builder: (context, snapshot){
