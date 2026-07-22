@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_mugger/services/auth_service.dart';
+import 'package:geo_mugger/services/user_stats_service.dart';
 import 'package:geo_mugger/views/login/welcome_view.dart';
+import 'package:geo_mugger/widgets/user_stats.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -47,6 +49,7 @@ class ProfileView extends StatelessWidget {
             final userData = snapshot.data?.data() as Map<String, dynamic>?;
             final String username = userData?['username'] ?? 'No Username Set';
             final String? profilePicUrl = userData?['profilePicUrl'];
+
             return Column(
               children: [
                 SizedBox(height: 80),
@@ -66,7 +69,28 @@ class ProfileView extends StatelessWidget {
                 Text(username, 
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
                 const Spacer(),
-                const Text("more info TBA!"),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal:40.0),
+                  child: FutureBuilder<Map<String,int>>(
+                    future: UserStatsService().getUserStats(user?.uid ?? ''),
+                    builder: (context, statsSnapshot) {
+                      if(statsSnapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          height:80,
+                          child: Center(child: CircularProgressIndicator(color:Colors.black)),
+                        );
+                      }
+                      final stats = statsSnapshot.data ?? {'spotsReviewed':0, 'spotsSaved':0};
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            UserStats(count: '${stats['spotsReviewed']}',label: 'Spots\nReviewed'),
+                            UserStats(count: '${stats['spotsSaved']}', label: 'Spots\nSaved')
+                          ],
+                        );
+                    },
+                  ),
+                ),
                 const Spacer(),
 
 
