@@ -54,6 +54,7 @@ dependencies:
   geocoding: ^5.0.0
   #google_maps_webservice_ex: ^0.0.1
   google_places_sdk_plus: ^1.1.0
+  http: ^1.6.0
   
 dev_dependencies:
   flutter_test:
