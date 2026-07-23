@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geo_mugger/services/recommendation_service.dart';
 import 'package:geo_mugger/views/home_screen.dart';
 import 'package:geo_mugger/views/onboarding/set_profile_pic_view.dart';
 import 'package:image_picker/image_picker.dart';
@@ -99,6 +100,8 @@ class _OnboardingWrapperState extends State<OnboardingWrapper> {
         'hasCompletedOnboarding': true,
         'updatedAt' : FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
+    final recService = RecommendationService();
+    await recService.generateAndSaveRecc(user.uid);
     if (mounted){
       Navigator.pushReplacement(context,
       MaterialPageRoute(builder: (context) => HomePage()),
@@ -113,6 +116,8 @@ class _OnboardingWrapperState extends State<OnboardingWrapper> {
     }
   }
   }
+
+
 
   @override
   void dispose() {
