@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geo_mugger/services/auth_service.dart';
+import 'package:geo_mugger/views/home_screen.dart';
 import 'package:geo_mugger/views/login/sign_up_view.dart';
 
 class LoginView extends StatefulWidget {
@@ -42,10 +43,15 @@ class _LoginViewState extends State<LoginView> {
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
     );
-    if (mounted) setState(() => _isLoading = false);
+    if (!mounted) return; 
+    setState(() => _isLoading = false);
     if (errorResult != null) {
       _showSnackbar(errorResult);
-    } 
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    }
   }
 
   @override
