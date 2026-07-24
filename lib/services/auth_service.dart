@@ -18,7 +18,7 @@ class AuthService {
 
       // 2. defensive firestore write
       try {
-        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+        await FirebaseFirestore.instance.collection('user').doc(userCredential.user!.uid).set({
           'email': cleanEmail,
           'hasCompletedOnboarding': false,
           'preferredTags': [],

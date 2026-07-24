@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_mugger/services/auth_service.dart';
 import 'package:geo_mugger/views/home_screen.dart';
 import 'package:geo_mugger/views/login/sign_up_view.dart';
+import 'package:geo_mugger/views/onboarding/onboarding_wrapper.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -44,13 +47,37 @@ class _LoginViewState extends State<LoginView> {
       password: _passwordController.text.trim(),
     );
     if (!mounted) return; 
-    setState(() => _isLoading = false);
     if (errorResult != null) {
+      setState(() => _isLoading = false);
       _showSnackbar(errorResult);
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
+      return;
+    } 
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final userDoc = await FirebaseFirestore
+        .instance.collection('user').doc(user.uid).get();
+        if (!mounted) return;
+        final userData = userDoc.data();
+
+        final bool isOnboarded = userData != null && 
+        (userData['hasCompletedOnboarding']  == true );
+        setState(() => _isLoading = false);
+
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => isOnboarded ? 
+            const HomePage() : const OnboardingWrapper(),
+          ),
+          (route) => false,
+        );
+      } else {
+        setState(() => _isLoading = false);
+        _showSnackbar('Error: User not found, try again');
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showSnackbar('Error during login: $e');
     }
   }
 
