@@ -18,8 +18,6 @@ class MapSelectorPage extends StatefulWidget {
 }
 
 class _MapSelectorPageState extends State<MapSelectorPage> {
-  final String _apikey = dotenv.env['CLOUD_API'] ?? ""; // Replace with your actual API key
-
   maps.GoogleMapController? _mapController;
   maps.LatLng? _pickedLocation;
   maps.LatLng? _currentLocation;
@@ -40,7 +38,20 @@ class _MapSelectorPageState extends State<MapSelectorPage> {
   @override
   void initState() {
     super.initState();
-    _places = FlutterGooglePlacesSdk(dotenv.env['CLOUD_API']!);
+
+    final String? envKey = dotenv.env['CLOUD_API'];
+    const String prodKey = String.fromEnvironment('CLOUD_API');
+    
+    // Pick the first one that exists
+    final String? apiKey = envKey?.isNotEmpty == true ? envKey : (prodKey.isNotEmpty ? prodKey : null);
+
+
+    if (apiKey != null) {
+      _places = FlutterGooglePlacesSdk(apiKey); 
+    } else {
+      debugPrint("Still returning null. Available keys: ${dotenv.env.keys}");
+    }
+    
     
     _pickedLocation = widget.initialLocation;
     _loadCustomMarker();

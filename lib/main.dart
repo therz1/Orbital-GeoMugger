@@ -10,6 +10,9 @@ void main() async {
   // 1. Initialize native engine interaction layer
   WidgetsFlutterBinding.ensureInitialized();
   
+  await dotenv.load(fileName: ".env");
+  debugPrint("All loaded variables: ${dotenv.env}");
+
   String? initError;
 
   try {

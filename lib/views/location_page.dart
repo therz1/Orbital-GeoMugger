@@ -104,7 +104,7 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
       ),
 
       // SHOWS ALL DETAILS 
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,6 +140,8 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                           height: 200,
                           width: double.infinity,
                           fit: BoxFit.cover,
+                          fadeOutDuration: Duration.zero, 
+                          fadeInDuration: Duration.zero,  
 
                           // Loading placeholder
                           placeholder:(context, url) => Container( 
@@ -226,6 +228,7 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                 );
               },
             ),
+          
             const SizedBox(height: 8),           
             const Divider(height: 16, thickness: 1),
 
@@ -278,8 +281,7 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
             ),
             const SizedBox(height: 16),
 
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
+            StreamBuilder<QuerySnapshot>(
                 stream: LocationService().getReviews(widget.locationID),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
@@ -288,8 +290,12 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
+                  
                   final List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
+                  
                   return ListView.builder(
+                    shrinkWrap: true, // IMPORTANT: Allows list to take only necessary height
+                    physics: const NeverScrollableScrollPhysics(), // IMPORTANT: Disables list scrolling, lets page scroll
                     itemCount: documents.length,
                     itemBuilder: (context, index) {
                       final Map<String, dynamic> data = documents[index].data() as Map<String, dynamic>;
@@ -313,6 +319,8 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                                     height: 200,
                                     width: double.infinity,
                                     fit: BoxFit.cover,
+                                    fadeOutDuration: Duration.zero, // Add this
+                                    fadeInDuration: Duration.zero,  // Add this
 
                                     // Loading placeholder
                                     placeholder:(context, url) => Container( 
@@ -361,10 +369,9 @@ class _LocationDetailPageState extends State<LocationDetailPage> {
                   );
                 },
               ),
-            ),
-          ],
+            ]
+          ),
         ),
-      ),
-    );
+      );
   }
 }
