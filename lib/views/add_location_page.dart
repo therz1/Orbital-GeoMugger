@@ -378,10 +378,10 @@ class _AddLocationPageState extends State<AddLocationPage> {
                               );
                               
                               
-                              print("Result received: $result"); // Does this print the correct Lat/Lng?
+                              //print("Result received: $result"); // Does this print the correct Lat/Lng?
 
                               if (result != null) {
-                                print("Updating state with: $result");
+                                //print("Updating state with: $result");
                                 setState(() {
                                   _pickedLocation = result;
                                 });

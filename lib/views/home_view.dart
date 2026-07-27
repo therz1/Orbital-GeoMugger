@@ -45,6 +45,9 @@ class _HomeViewState extends State<HomeView> {
   Future<void> _fetchTags() async {
     try {
       DocumentSnapshot doc = await FirebaseFirestore.instance.collection('metadata').doc('tags_list').get();
+
+      if (!mounted) return;
+
       if(doc.exists) {
         setState(() {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -52,6 +55,7 @@ class _HomeViewState extends State<HomeView> {
         });
       }
     } catch(error) {
+      if (!mounted) return;
       debugPrint("Error fetching tag Map : $error");
     }
   }
